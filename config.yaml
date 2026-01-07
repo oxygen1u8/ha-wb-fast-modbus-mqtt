@@ -1,0 +1,13 @@
+name: "Wirenboard Fast Modbus to MQTT"
+description: "Hi, Mark!"
+version: "0.1"
+slug: "ha-wb-fast-modbus-mqtt"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+uart: true
+webui: "http://[HOST]:[PORT:8080]"
