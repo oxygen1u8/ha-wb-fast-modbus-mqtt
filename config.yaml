@@ -1,6 +1,6 @@
 name: "Wirenboard Fast Modbus to MQTT"
 description: "Hi, Mark!"
-version: "0.1"
+version: "0.2"
 slug: "ha-wb-fast-modbus-mqtt"
 init: false
 arch:
@@ -10,4 +10,25 @@ arch:
   - armv7
   - i386
 uart: true
-webui: "http://[HOST]:[PORT:8080]"
+options:
+  Serial port config:
+    - Port: ""
+      Baudrate: "9600"
+      Parity: "N"
+      Stop bit count: "2"
+
+  MQTT host: "core-mosquitto"
+  MQTT port: 1883
+  MQTT username: ""
+  MQTT password: ""
+schema:
+  Serial port config:
+    - Port: device(subsystem=tty)
+      Baudrate: list(1200|2400|4800|9600|19200|38400|57600|115200)
+      Parity: "list(N|O|E)"
+      Stop bit count: "list(1|2)"
+
+  MQTT host: str
+  MQTT port: port
+  MQTT username: str
+  MQTT password: str
