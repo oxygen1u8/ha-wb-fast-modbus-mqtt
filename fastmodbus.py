@@ -67,6 +67,10 @@ class FastModbusSerialClient(ModbusSerialClient):
                     msg.append(data)
                     state = GET_RESPONSE_MSG_STATE
 
+            elif state == CONTINUE_SCAN_STATE:
+                self.__fm_send(bytes([CONTINUE_SCAN_CMD]))
+                state = GET_DUMMY_DATA_STATE
+
             elif state == GET_RESPONSE_MSG_STATE:
                 if not hasattr(self, "slave_map"):
                     self.slave_map = {}
@@ -109,20 +113,9 @@ class FastModbusSerialClient(ModbusSerialClient):
 
                     state = CONTINUE_SCAN_STATE
 
-            elif state == CONTINUE_SCAN_STATE:
-                self.__fm_send(bytes([CONTINUE_SCAN_CMD]))
-                state = GET_DUMMY_DATA_STATE
-
             else:
                 raise ConnectionError()
 
     def scan(self):
         self.__start_scan()
         self.__scan_process()
-
-
-client = FastModbusSerialClient("/dev/ttyACM0", baudrate=115200)
-client.connect()
-client.scan()
-print(client.slave_map)
-client.close()
