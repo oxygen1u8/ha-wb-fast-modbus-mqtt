@@ -1,7 +1,1 @@
-# Wirenboard Быстрый Modbus протокол для Home Assistant
-
-## Описание
-
-## Установка
-
-## Конфигурация
+# Home Assistant addon for Wirenboard Fast Modbus protocol
