@@ -6,4 +6,4 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 echo "Start main.py"
-python3 main.py /data/options.json
+python3 main.py --options /data/options.json
