@@ -16,19 +16,19 @@ options:
       Baudrate: "9600"
       Parity: "N"
       Stop bit count: "2"
-
-  MQTT host: "core-mosquitto"
-  MQTT port: 1883
-  MQTT username: ""
-  MQTT password: ""
+  # MQTT data:
+  #   Host: "core-mosquitto"
+  #   Port: 1883
+  #   Username: ""
+  #   Password: ""
 schema:
   Serial port config:
     - Port: device(subsystem=tty)
       Baudrate: list(1200|2400|4800|9600|19200|38400|57600|115200)
       Parity: "list(N|O|E)"
       Stop bit count: "list(1|2)"
-
-  MQTT host: str
-  MQTT port: port
-  MQTT username: str
-  MQTT password: str
+  # MQTT data:
+  #   Host: str
+  #   Port: port
+  #   Username: str
+  #   Password: str
