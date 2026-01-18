@@ -12,6 +12,7 @@ async def scan(serial_port: str):
     parity = ["O", "E", "N"]
     stop_bits = [1, 2]
 
+    print("Fast Modbus scan...")
     slave_map = []
     t1 = time.time()
     for b in baudrates:
@@ -32,6 +33,15 @@ async def scan(serial_port: str):
     print(f"[{serial_port}]: scan took {t2 - t1} s")
     for slave in slave_map:
         print(slave)
+
+    slave_id = 37
+    reg_addr = 0x6E
+    print(f"Default Modbus scan device with {slave_id}...")
+    client = AsyncFastModbusSerialClient(serial_port, baudrate=115200, parity="N", stopbits=2)
+    await client.connect()
+    result = await client.read_holding_registers(address=reg_addr, device_id=slave_id)
+    print(f"From slave_id {hex(slave_id)} reg {hex(reg_addr)}: {result}")
+    client.close()
 
     return slave_map
 
