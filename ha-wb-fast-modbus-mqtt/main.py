@@ -7,9 +7,6 @@ import json
 import argparse
 
 
-# logging.basicConfig(level=logging.DEBUG)
-
-
 async def scan(serial_port: str):
     baudrates = [1200, 2400, 4800, 9600, 19200, 38400, 76800, 115200]
     parity = ["O", "E", "N"]
@@ -25,14 +22,14 @@ async def scan(serial_port: str):
                 )
                 await client.connect()
                 # result = await client.read_holding_registers(0x6E, device_id=115)
-                print(f"Scan on {b} bps | parity: {p} | stop bits: {s}")
+                print(f"[{serial_port}]: scan on {b} bps | parity: {p} | stop bits: {s}")
                 result = await client.scan()
                 if len(result):
                     slave_map += result
                 client.close()
     t2 = time.time()
 
-    print(f"Scan took {t2 - t1} s")
+    print(f"[{serial_port}]: scan took {t2 - t1} s")
     for slave in slave_map:
         print(slave)
 
