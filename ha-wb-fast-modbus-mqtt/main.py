@@ -1,10 +1,47 @@
-from fastmodbus import FastModbusSerialClient
+from fastmodbus.asyncfastmodbus import AsyncFastModbusSerialClient
+from pymodbus.pdu.decoders import *
+import logging
+import asyncio
+import time
 import json
 import argparse
 
-def main():
-    parser = argparse.ArgumentParser(description='Fast Modbus')
-    parser.add_argument('--options', type=str, help='Путь до options.json')
+
+# logging.basicConfig(level=logging.DEBUG)
+
+
+async def scan(serial_port: str):
+    baudrates = [1200, 2400, 4800, 9600, 19200, 38400, 76800, 115200]
+    parity = ["O", "E", "N"]
+    stop_bits = [1]
+
+    slave_map = []
+    t1 = time.time()
+    for b in baudrates:
+        for p in parity:
+            for s in stop_bits:
+                client = AsyncFastModbusSerialClient(
+                    serial_port, baudrate=b, parity=p, stopbits=s
+                )
+                await client.connect()
+                # result = await client.read_holding_registers(0x6E, device_id=115)
+                print(f"Scan on {b} bps | parity: {p} | stop bits: {s}")
+                result = await client.scan()
+                if len(result):
+                    slave_map += result
+                client.close()
+    t2 = time.time()
+
+    print(f"Scan took {t2 - t1} s")
+    for slave in slave_map:
+        print(slave)
+
+    return slave_map
+
+
+async def main():
+    parser = argparse.ArgumentParser(description="Fast Modbus")
+    parser.add_argument("--options", type=str, help="Путь до options.json")
 
     args = parser.parse_args()
     path_to_options = args.options
@@ -12,28 +49,9 @@ def main():
     with open(path_to_options, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    ports = []
-    for port in data["Serial port config"]:
-        port_path = port["Port"]
-        baudrate = int(port["Baudrate"])
-        stop_bit_count = int(port["Stop bit count"])
-        parity = port["Parity"]
-        ports.append(
-            FastModbusSerialClient(
-                port=port_path,
-                baudrate=baudrate,
-                stopbits=stop_bit_count,
-                parity=parity
-            )
-        )
+    tasks = [asyncio.create_task(scan(port)) for port in data["Serial port config"]]
+    await asyncio.gather(*tasks)
 
-    for port in ports:
-        port.connect()
-        port.scan()
-        print(port.slave_map)
-
-    for port in ports:
-        port.close()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

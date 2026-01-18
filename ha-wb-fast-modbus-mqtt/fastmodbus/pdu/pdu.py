@@ -1,0 +1,35 @@
+from pymodbus.pdu import ModbusPDU
+from pymodbus.pdu.decoders import DecodePDU
+from pymodbus.exceptions import ModbusIOException
+from pymodbus.pdu import ModbusPDU
+import struct
+
+
+class FastModbusPDU(ModbusPDU):
+    dev_id = 0xFD
+    function_code = 0x46
+
+    def __init__(
+        self,
+        data: bytes | None = None,
+        transaction_id=0,
+        address=0,
+        count=0,
+        bits=None,
+        registers=None,
+        status=1,
+    ):
+        self.data = data
+        super().__init__(
+            self.dev_id, transaction_id, address, count, bits, registers, status
+        )
+
+    def encode(self) -> bytes:
+        if not hasattr(self, "sub_function_code"):
+            raise ModbusIOException(
+                "Fast Modbus request required a 'sub_function_code' attribute"
+            )
+        result_data = struct.pack(">b", self.sub_function_code)
+        if self.data is not None:
+            result_data += struct.pack(">b", self.data)
+        return result_data
