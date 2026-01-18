@@ -13,9 +13,9 @@ uart: true
 options:
   Serial port config:
     - Port: ""
-      Baudrate: "9600"
-      Parity: "N"
-      Stop bit count: "2"
+      # Baudrate: "9600"
+      # Parity: "N"
+      # Stop bit count: "2"
   # MQTT data:
   #   Host: "core-mosquitto"
   #   Port: 1883
@@ -24,9 +24,9 @@ options:
 schema:
   Serial port config:
     - Port: device(subsystem=tty)
-      Baudrate: list(1200|2400|4800|9600|19200|38400|57600|115200)
-      Parity: "list(N|O|E)"
-      Stop bit count: "list(1|2)"
+      # Baudrate: list(1200|2400|4800|9600|19200|38400|57600|115200)
+      # Parity: "list(N|O|E)"
+      # Stop bit count: "list(1|2)"
   # MQTT data:
   #   Host: str
   #   Port: port
