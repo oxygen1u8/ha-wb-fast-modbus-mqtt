@@ -10,7 +10,7 @@ import argparse
 async def scan(serial_port: str):
     baudrates = [9600, 115200]
     parity = ["O", "E", "N"]
-    stop_bits = [1, 2]
+    stop_bits = [1]
 
     print("Fast Modbus scan...")
     slave_map = []
@@ -23,7 +23,7 @@ async def scan(serial_port: str):
                 )
                 await client.connect()
                 # result = await client.read_holding_registers(0x6E, device_id=115)
-                print(f"[{serial_port}]: scan on {b} bps | parity: {p} | stop bits: {s}")
+                print(f"[{serial_port}]: scan on {b} bps | parity: {p}")
                 result = await client.scan()
                 if len(result):
                     slave_map += result
@@ -56,8 +56,9 @@ async def main():
     with open(path_to_options, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    tasks = [asyncio.create_task(scan(port["Port"])) for port in data["Serial port config"]]
-    await asyncio.gather(*tasks)
+    # tasks = [asyncio.create_task(scan(port["Port"])) for port in data["Serial port config"]]
+    # await asyncio.gather(*tasks)
+    await scan("/dev/ttyACM1")
 
 
 if __name__ == "__main__":
