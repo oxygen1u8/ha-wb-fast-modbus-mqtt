@@ -10,7 +10,7 @@ import argparse
 async def scan(serial_port: str):
     baudrates = [1200, 2400, 4800, 9600, 19200, 38400, 76800, 115200]
     parity = ["O", "E", "N"]
-    stop_bits = [1]
+    stop_bits = [1, 2]
 
     slave_map = []
     t1 = time.time()
