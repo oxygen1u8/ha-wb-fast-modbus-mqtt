@@ -49,7 +49,7 @@ async def main():
     with open(path_to_options, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    tasks = [asyncio.create_task(scan(port)) for port in data["Serial port config"]]
+    tasks = [asyncio.create_task(scan(port["Port"])) for port in data["Serial port config"]]
     await asyncio.gather(*tasks)
 
 
