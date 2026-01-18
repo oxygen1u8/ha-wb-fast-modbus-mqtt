@@ -10,4 +10,4 @@ class FastModbusSlave:
 
 
     def __str__(self):
-        return f"{hex(self.slave_id)} | {hex(self.serial_num)} | {(self.baudrate)} | {self.parity} | {self.stop}"
+        return f"{hex(self.slave_id)} | {hex(self.serial_num)} | {(self.baudrate)} | {self.parity}"
