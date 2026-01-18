@@ -8,7 +8,7 @@ import argparse
 
 
 async def scan(serial_port: str):
-    baudrates = [9600, 115200]
+    baudrates = [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200]
     parity = ["O", "E", "N"]
 
     print("Start Fast Modbus scan...")
