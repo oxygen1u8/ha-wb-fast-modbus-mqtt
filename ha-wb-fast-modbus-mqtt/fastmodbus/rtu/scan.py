@@ -1,10 +1,32 @@
+"""
+Модуль, определяющий фреймер для сканирования протокола Fast Modbus.
+
+Содержит класс FastScanFramerRTU, который реализует механизм
+декодирования фреймов для протокола Fast Modbus.
+"""
+
 from pymodbus.framer import FramerRTU
 from pymodbus.logging import Log
 
 
 class FastScanFramerRTU(FramerRTU):
+    """
+    Класс фреймера для сканирования протокола Fast Modbus.
+    
+    Расширяет стандартный FramerRTU для поддержки специфичных возможностей
+    протокола Fast Modbus от Wiren Board.
+    """
+    
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
-        """Decode ADU."""
+        """
+        Декодирует ADU (Application Data Unit).
+        
+        Args:
+            data: Данные для декодирования
+            
+        Returns:
+            tuple[int, int, int, bytes]: Кортеж с информацией о декодированном фрейме
+        """
         self.MIN_SIZE = 5
         BROADCAST_ADDRESS = 0xFD
 

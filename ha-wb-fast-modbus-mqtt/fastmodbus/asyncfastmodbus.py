@@ -1,3 +1,11 @@
+"""
+Асинхронный клиент для работы с протоколом Fast Modbus от Wiren Board.
+
+Модуль предоставляет класс AsyncFastModbusSerialClient, который расширяет
+функциональность стандартного AsyncModbusSerialClient для поддержки
+специфичных возможностей протокола Fast Modbus.
+"""
+
 from pymodbus.client import AsyncModbusSerialClient
 from pymodbus.pdu.decoders import DecodePDU
 from pymodbus.exceptions import ModbusIOException
@@ -14,7 +22,20 @@ import traceback
 
 
 class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
+    """
+    Асинхронный клиент для протокола Fast Modbus.
+    
+    Расширяет стандартный AsyncModbusSerialClient для поддержки специфичных
+    возможностей протокола Fast Modbus от Wiren Board.
+    """
+    
     async def scan(self):
+        """
+        Выполняет сканирование шины Modbus для обнаружения устройств.
+        
+        Returns:
+            list: Список объектов FastModbusSlave, представляющих найденные устройства
+        """
         base_framer = self.ctx.framer
         base_retries = self.ctx.retries
         decoder = self.ctx.framer.decoder
@@ -53,9 +74,8 @@ class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
                         self.comm_params.stopbits,
                     )
                 )
-        except:
+        except Exception as e:
             # traceback.print_exc()
-
             return []
         finally:
             self.ctx.retries = base_retries

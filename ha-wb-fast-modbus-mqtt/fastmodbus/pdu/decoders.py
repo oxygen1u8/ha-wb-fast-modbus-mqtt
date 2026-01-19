@@ -1,3 +1,11 @@
+"""
+Модуль, определяющий декодеры PDU для протокола Fast Modbus.
+
+Содержит класс CustomDecodePDU, который расширяет возможности
+стандартного декодера для поддержки специфичных особенностей
+протокола Fast Modbus.
+"""
+
 from pymodbus.pdu.decoders import DecodePDU
 from pymodbus.pdu.pdu import ModbusPDU
 from pymodbus.pdu.exceptionresponse import ExceptionResponse
@@ -5,16 +13,37 @@ from pymodbus.logging import Log
 from pymodbus.exceptions import ModbusException
 
 class CustomDecodePDU(DecodePDU):
+    """
+    Класс декодера PDU для протокола Fast Modbus.
+    
+    Расширяет стандартный DecodePDU для поддержки специфичных возможностей
+    протокола Fast Modbus от Wiren Board.
+    """
     pdu_fast_modbus_table = []
 
     @classmethod
     def add_sub_pdu_ext(cls, req: type[ModbusPDU], resp: type[ModbusPDU]):
+        """
+        Добавляет PDU в таблицу для расширенной обработки.
+        
+        Args:
+            req: Тип запроса PDU
+            resp: Тип ответа PDU
+        """
         _ = req
         if resp not in cls.pdu_fast_modbus_table:
             cls.pdu_fast_modbus_table.append(resp)
 
     def lookupPduClass(self, data: bytes) -> type[ModbusPDU] | None:
-        """Use `function_code` to determine the class of the PDU."""
+        """
+        Определяет класс PDU по коду функции.
+        
+        Args:
+            data: Данные для определения класса PDU
+            
+        Returns:
+            type[ModbusPDU] | None: Класс PDU или None, если не найден
+        """
         if (func_code := int(data[1])) & 0x80:
             return ExceptionResponse
 
@@ -32,7 +61,15 @@ class CustomDecodePDU(DecodePDU):
 
 
     def decode(self, frame: bytes) -> ModbusPDU | None:
-        """Decode a frame."""
+        """
+        Декодирует фрейм в объект PDU.
+        
+        Args:
+            frame: Байты фрейма для декодирования
+            
+        Returns:
+            ModbusPDU | None: Декодированный объект PDU или None
+        """
         try:
             if (function_code := int(frame[0])) > 0x80:
                 pdu_exp = ExceptionResponse(function_code & 0x7F)
