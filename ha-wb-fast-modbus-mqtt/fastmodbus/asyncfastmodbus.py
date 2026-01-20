@@ -47,7 +47,7 @@ class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
             self.ctx.framer = FastScanFramerRTU(decoder)
             self.ctx.framer.decoder = CustomDecodePDU(False)
 
-            slave_map = list[FastModbusSlave]
+            slave_map = []
             first_request = True
 
             while True:
