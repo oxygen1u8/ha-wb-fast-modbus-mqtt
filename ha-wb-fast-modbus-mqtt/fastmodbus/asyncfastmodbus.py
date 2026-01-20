@@ -8,7 +8,7 @@
 
 from pymodbus.client import AsyncModbusSerialClient
 from pymodbus.pdu.decoders import DecodePDU
-from pymodbus.exceptions import ModbusIOException
+from pymodbus.exceptions import ModbusIOException, ConnectionException
 from .pdu.scan import (
     FastModbusScanRequest,
     FastModbusContinueScanRequest,
@@ -19,66 +19,79 @@ from .rtu.scan import FastScanFramerRTU
 from .slave import FastModbusSlave
 import asyncio
 import traceback
+import logging
 
 
 class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
     """
     Асинхронный клиент для протокола Fast Modbus.
-    
+
     Расширяет стандартный AsyncModbusSerialClient для поддержки специфичных
-    возможностей протокола Fast Modbus от Wiren Board.
+    возможностей протокола Fast Modbus от Wireн Board.
     """
-    
-    async def scan(self):
+
+    async def scan(self) -> list[FastModbusSlave]:
         """
         Выполняет сканирование шины Modbus для обнаружения устройств.
-        
+
         Returns:
             list: Список объектов FastModbusSlave, представляющих найденные устройства
         """
-        base_framer = self.ctx.framer
-        base_retries = self.ctx.retries
-        decoder = self.ctx.framer.decoder
-
-        self.ctx.retries = 0
-        self.ctx.framer = FastScanFramerRTU(decoder)
-        self.ctx.framer.decoder = CustomDecodePDU(False)
-
-        slave_map = []
+        original_framer = self.ctx.framer
+        original_retries = self.ctx.retries
 
         try:
-            result = await self.execute(
-                request=FastModbusScanRequest(), no_response_expected=False
-            )
-            slave_map.append(
-                FastModbusSlave(
-                    result.slave_id,
-                    result.serial_num,
-                    self.comm_params.baudrate,
-                    self.comm_params.parity,
-                    self.comm_params.stopbits,
-                )
-            )
+            # Настраиваем фреймер для сканирования
+            decoder = self.ctx.framer.decoder
+            self.ctx.retries = 0
+            self.ctx.framer = FastScanFramerRTU(decoder)
+            self.ctx.framer.decoder = CustomDecodePDU(False)
+
+            slave_map = list[FastModbusSlave]
+            first_request = True
+
             while True:
-                result = await self.execute(
-                    request=FastModbusContinueScanRequest(), no_response_expected=False
-                )
-                if type(result) is FastModbusScanEndResponse:
-                    break
-                slave_map.append(
-                    FastModbusSlave(
-                        result.slave_id,
-                        result.serial_num,
-                        self.comm_params.baudrate,
-                        self.comm_params.parity,
-                        self.comm_params.stopbits,
+                # Первый запрос сканирования или продолжение сканирования
+                try:
+                    if not first_request:
+                        request = FastModbusContinueScanRequest()
+                    else:
+                        request = FastModbusScanRequest()
+                        first_request = False
+
+                    result = await self.execute(
+                        request=request, no_response_expected=False
                     )
-                )
-        except Exception as e:
-            # traceback.print_exc()
-            return []
+
+                    # Проверяем, завершено ли сканирование
+                    if isinstance(result, FastModbusScanEndResponse):
+                        break
+
+                    slave_map.append(
+                        FastModbusSlave(
+                            result.slave_id,
+                            result.serial_num,
+                            self.comm_params.baudrate,
+                            self.comm_params.parity,
+                        )
+                    )
+                except (
+                    ModbusIOException,
+                    ConnectionException,
+                    asyncio.TimeoutError,
+                ) as e:
+                    logging.error(f"Ошибка при выполнении запроса сканирования: {e}")
+                    break
+        except (
+            ModbusIOException,
+            ConnectionException,
+            asyncio.TimeoutError,
+            Exception,
+        ) as e:
+            logging.error(f"Ошибка при сканировании шины Modbus: {e}")
         finally:
-            self.ctx.retries = base_retries
-            self.ctx.framer = base_framer
+            # Восстанавливаем оригинальные параметры
+            self.ctx.retries = original_retries
+            self.ctx.framer = original_framer
 
             return slave_map
