@@ -27,7 +27,7 @@ async def main():
     with open(path_to_options, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    port_managers = [FastModbusManager(port) for port in data["Serial port config"]]
+    port_managers = [FastModbusManager(port["Port"]) for port in data["Serial port config"]]
 
     await asyncio.gather(
         *[asyncio.create_task(execute_scan(manager)) for manager in port_managers]
