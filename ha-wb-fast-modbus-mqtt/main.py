@@ -12,7 +12,8 @@ async def execute_scan(manager: FastModbusManager):
     t = time.time() - t
     print(f"[{manager.port}]: scan took {t} s")
     if len(slave_map):
-        print("\n".join(f"[{manager.port}]: {slave}" for slave in slave_map))
+        for slave in slave_map:
+            print(f"[{manager.port}]: {slave}")
     else:
         print(f"[{manager.port}]: no Fast Modbus device found")
 
