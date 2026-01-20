@@ -75,12 +75,13 @@ class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
                             self.comm_params.parity,
                         )
                     )
+                except ModbusIOException:
+                    pass
                 except (
-                    ModbusIOException,
                     ConnectionException,
                     asyncio.TimeoutError,
                 ) as e:
-                    logging.error(f"Ошибка при выполнении запроса сканирования: {e}")
+                    logging.error(f"Error in execute scan: {e}")
                     break
         except (
             ModbusIOException,
@@ -88,7 +89,7 @@ class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
             asyncio.TimeoutError,
             Exception,
         ) as e:
-            logging.error(f"Ошибка при сканировании шины Modbus: {e}")
+            logging.error(f"Error in execute scan Modbus: {e}")
         finally:
             # Восстанавливаем оригинальные параметры
             self.ctx.retries = original_retries
