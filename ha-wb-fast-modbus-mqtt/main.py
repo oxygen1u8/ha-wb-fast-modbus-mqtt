@@ -118,11 +118,16 @@ async def get_ports():
 
 if __name__ == "__main__":
     import uvicorn
+    import os
 
     parser = argparse.ArgumentParser(description="Fast Modbus")
     parser.add_argument("--options", type=str, help="Путь до options.json")
 
     args = parser.parse_args()
     path_to_options = args.options
+    
+    # Получаем порт из переменной окружения, если она установлена (для Home Assistant ingress)
+    port = int(os.environ.get("PORT", 8000))
+    
     # Запускаем веб-сервер
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=port)
