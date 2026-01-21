@@ -1,6 +1,6 @@
 name: "Wirenboard Fast Modbus to MQTT"
 description: "Hi, Mark!"
-version: "0.3581"
+version: "0.3582"
 slug: "ha-wb-fast-modbus-mqtt"
 init: false
 arch:
@@ -15,6 +15,7 @@ uart: true
 webui: http://[HOST]:[PORT:8000]
 ingress: true
 ingress_port: 8000
+ingress_stream: true
 options:
   Serial port config:
     - Port: ""
