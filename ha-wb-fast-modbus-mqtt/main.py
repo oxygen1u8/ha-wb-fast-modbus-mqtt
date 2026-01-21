@@ -1,4 +1,4 @@
-from fastmodbus.manager import FastModbusManager
+from fastmodbus.manager import WirenboardModbusManager
 from pymodbus.pdu.decoders import *
 import asyncio
 import time
@@ -25,25 +25,26 @@ app.mount("/static", StaticFiles(directory="webapp/static"), name="static")
 scan_logs = []
 
 
-async def execute_scan(manager: FastModbusManager):
+async def execute_scan(manager: WirenboardModbusManager):
     t = time.time()
     slave_map = await manager.scan_bus()
     t = time.time() - t
     log_message = f"[{manager.port}]: scan took {t} s"
     logger.info(log_message)
-    scan_logs.append(log_message)
-    
     if not len(slave_map):
-        log_message = f"[{manager.port}]: no Fast Modbus device found"
+        log_message = f"[{manager.port}]: no Fast Modbus device found\n"
         logger.info(log_message)
         scan_logs.append(log_message)
     else:
         for slave in slave_map:
-            log_message = f"[{manager.port}]: {slave}"
-            logger.info(log_message)
+            log_message = f"Device name: {slave.device_name}\n"
+            log_message += f"Firmware Version: {slave.firmware_version}\n"
+            log_message += f"Slave ID: {hex(slave.slave_id)} ({slave.slave_id})\n"
+            log_message += f"Serial Number: {hex(slave.serial_num)} ({slave.serial_num})\n"
+            log_message += f"Baudrate: {slave.baudrate} bps\n"
+            log_message += f"Parity: {slave.parity}\n"
+            logger.info(f"[{manager.port}]: ", log_message)
             scan_logs.append(log_message)
-    
-    return slave_map
 
 
 async def run_scans(options_path: str, specific_port: str = None):
@@ -58,7 +59,7 @@ async def run_scans(options_path: str, specific_port: str = None):
         ports = data["Serial port config"]
 
     port_managers = [
-        FastModbusManager(port["Port"]) for port in ports
+        WirenboardModbusManager(port["Port"], baudrates=[9600, 115200], parity_options=["N"]) for port in ports
     ]
 
     results = await asyncio.gather(

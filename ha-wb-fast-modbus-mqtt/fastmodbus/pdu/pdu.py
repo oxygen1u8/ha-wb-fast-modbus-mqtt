@@ -67,3 +67,5 @@ class FastModbusPDU(ModbusPDU):
         if self.data is not None:
             result_data += struct.pack(">b", self.data)
         return result_data
+
+

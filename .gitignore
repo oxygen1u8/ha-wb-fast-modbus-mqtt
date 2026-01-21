@@ -3,3 +3,4 @@ load_config.py
 __pycache__/
 options.json
 .vscode/
+__main.py

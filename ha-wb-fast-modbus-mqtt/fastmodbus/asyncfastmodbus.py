@@ -14,6 +14,7 @@ from .pdu.scan import (
     FastModbusContinueScanRequest,
     FastModbusScanEndResponse,
 )
+from .pdu.serial import FastModbusSerialRequest, FastModbusSerialResponse
 from .pdu.decoders import CustomDecodePDU
 from .rtu.scan import FastScanFramerRTU
 from .slave import FastModbusSlave
@@ -29,6 +30,25 @@ class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
     Расширяет стандартный AsyncModbusSerialClient для поддержки специфичных
     возможностей протокола Fast Modbus от Wireн Board.
     """
+
+    async def read_input_registers_by_serial(
+        self,
+        serial_num: int,
+        address: int,
+        count: int = 1,
+        no_response_expected: bool = False,
+    ):
+        
+        # self.read_input_registers()
+        return await self.execute(
+            no_response_expected,
+            FastModbusSerialRequest(
+                serial_num=serial_num,
+                address=address,
+                modbus_function_code=0x04,
+                count=count,
+            )
+        )
 
     async def scan(self) -> list[FastModbusSlave]:
         """
@@ -56,7 +76,7 @@ class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
                     result.slave_id,
                     result.serial_num,
                     self.comm_params.baudrate,
-                    self.comm_params.parity
+                    self.comm_params.parity,
                 )
             )
             while True:
@@ -70,10 +90,9 @@ class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
                         result.slave_id,
                         result.serial_num,
                         self.comm_params.baudrate,
-                        self.comm_params.parity
+                        self.comm_params.parity,
                     )
                 )
-                print(slave_map)
         except Exception as e:
             # traceback.print_exc()
             print(f"GOT IT: {e}")

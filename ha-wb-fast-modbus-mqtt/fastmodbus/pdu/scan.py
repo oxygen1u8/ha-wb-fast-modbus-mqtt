@@ -7,7 +7,6 @@
 
 from .pdu import FastModbusPDU
 from .decoders import CustomDecodePDU
-from pymodbus.pdu.decoders import DecodePDU
 import struct
 
 
