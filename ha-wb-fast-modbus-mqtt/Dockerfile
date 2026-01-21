@@ -11,6 +11,7 @@ RUN .venv/bin/pip install --no-cache-dir -r /requirements.txt
 COPY *.sh /
 COPY *.py /
 COPY fastmodbus /fastmodbus
+COPY webapp /webapp
 
 RUN chmod a+x /run.sh
 
