@@ -81,3 +81,18 @@ body {
 .bg-indigo-800 {
     background-color: #3730a3;
 }
+
+/* Стили для консольного отображения логов */
+#logsContent {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.log-entry {
+    transition: all 0.3s ease;
+    padding: 4px 0;
+}
+
+.log-entry:hover {
+    background-color: #374151;
+}

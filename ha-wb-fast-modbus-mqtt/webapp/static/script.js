@@ -102,17 +102,18 @@ function updateLogs() {
     .then(response => response.json())
     .then(data => {
         const logsContent = document.getElementById('logsContent');
-        logsContent.innerHTML = '';
         
         if (data.logs.length === 0) {
             logsContent.innerHTML = '<p class="text-gray-500 italic">Логи сканирования будут отображаться здесь...</p>';
         } else {
+            // Создаем HTML содержимое с правильным форматированием
+            let logsHtml = '';
             data.logs.forEach(log => {
-                const logEntry = document.createElement('div');
-                logEntry.className = 'log-entry py-1 border-b border-gray-700';
-                logEntry.textContent = log;
-                logsContent.appendChild(logEntry);
+                // Заменяем переносы строк на <br> теги для отображения в HTML
+                const formattedLog = log.replace(/\n/g, '<br>');
+                logsHtml += `<div class="log-entry py-1 border-b border-gray-700">${formattedLog}</div>`;
             });
+            logsContent.innerHTML = logsHtml;
         }
         
         // Прокручиваем вниз
