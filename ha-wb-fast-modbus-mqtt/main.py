@@ -48,10 +48,6 @@ async def execute_scan(manager: WirenboardModbusManager):
 
 
 async def run_scans(options_path: str, specific_port: str = None):
-    """Запуск сканирования для всех портов из конфигурации или для конкретного порта"""
-    with open(options_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
     # Если указан конкретный порт, используем только его
     if specific_port:
         ports = [{"Port": specific_port}]
@@ -126,6 +122,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     path_to_options = args.options
+
+    with open(path_to_options, "r", encoding="utf-8") as f:
+        data = json.load(f)
     
     # Получаем порт из переменной окружения, если она установлена (для Home Assistant ingress)
     port = int(os.environ.get("PORT", 8000))
