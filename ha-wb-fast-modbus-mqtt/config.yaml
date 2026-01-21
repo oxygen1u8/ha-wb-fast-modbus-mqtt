@@ -10,6 +10,9 @@ arch:
   - armv7
   - i386
 uart: true
+ports:
+  7373/tcp: 7373
+webui: http://[HOST]:[PORT:7373]
 options:
   Serial port config:
     - Port: ""

@@ -9,7 +9,7 @@ class FastModbusManager:
         self, port: str, baudrates: list[int] = None, parity_options: list[str] = None
     ):
         self.port = port
-        self.baudrates = baudrates or [9600, 19200, 38400, 57600, 115200]
+        self.baudrates = baudrates or [115200]
         self.parity_options = parity_options or ["N", "E", "O"]
         self.clients = []
 

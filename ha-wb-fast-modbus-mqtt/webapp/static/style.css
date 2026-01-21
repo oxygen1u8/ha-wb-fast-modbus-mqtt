@@ -1,0 +1,83 @@
+/* Стили для темной темы интерфейса */
+.log-entry {
+    transition: all 0.3s ease;
+}
+
+.log-entry:hover {
+    background-color: #374151;
+}
+
+.scan-button {
+    transition: all 0.3s ease;
+}
+
+.scan-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.scan-button:active {
+    transform: translateY(0);
+}
+
+/* Дополнительные стили для темной темы */
+body {
+    background-color: #111827;
+    color: #f9fafb;
+}
+
+.bg-gray-900 {
+    background-color: #111827;
+}
+
+.text-gray-100 {
+    color: #f9fafb;
+}
+
+.bg-gray-800 {
+    background-color: #1f2937;
+}
+
+.text-gray-300 {
+    color: #d1d5db;
+}
+
+.bg-gray-700 {
+    background-color: #374151;
+}
+
+.border-gray-600 {
+    border-color: #4b5563;
+}
+
+.text-gray-400 {
+    color: #9ca3af;
+}
+
+.text-blue-400 {
+    color: #60a5fa;
+}
+
+.text-purple-400 {
+    color: #a78bfa;
+}
+
+.bg-blue-900 {
+    background-color: #1e3a8a;
+}
+
+.bg-blue-600 {
+    background-color: #2563eb;
+}
+
+.bg-blue-700 {
+    background-color: #1d4ed8;
+}
+
+.bg-indigo-700 {
+    background-color: #4338ca;
+}
+
+.bg-indigo-800 {
+    background-color: #3730a3;
+}

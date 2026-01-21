@@ -37,62 +37,49 @@ class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
         Returns:
             list: Список объектов FastModbusSlave, представляющих найденные устройства
         """
-        original_framer = self.ctx.framer
-        original_retries = self.ctx.retries
+        base_framer = self.ctx.framer
+        base_retries = self.ctx.retries
+        decoder = self.ctx.framer.decoder
+
+        self.ctx.retries = 0
+        self.ctx.framer = FastScanFramerRTU(decoder)
+        self.ctx.framer.decoder = CustomDecodePDU(False)
+
+        slave_map = []
 
         try:
-            # Настраиваем фреймер для сканирования
-            decoder = self.ctx.framer.decoder
-            self.ctx.retries = 0
-            self.ctx.framer = FastScanFramerRTU(decoder)
-            self.ctx.framer.decoder = CustomDecodePDU(False)
-
-            slave_map = []
-            first_request = True
-
+            result = await self.execute(
+                request=FastModbusScanRequest(), no_response_expected=False
+            )
+            slave_map.append(
+                FastModbusSlave(
+                    result.slave_id,
+                    result.serial_num,
+                    self.comm_params.baudrate,
+                    self.comm_params.parity
+                )
+            )
             while True:
-                # Первый запрос сканирования или продолжение сканирования
-                try:
-                    if not first_request:
-                        request = FastModbusContinueScanRequest()
-                    else:
-                        request = FastModbusScanRequest()
-                        first_request = False
-
-                    result = await self.execute(
-                        request=request, no_response_expected=False
-                    )
-
-                    # Проверяем, завершено ли сканирование
-                    if isinstance(result, FastModbusScanEndResponse):
-                        break
-
-                    slave_map.append(
-                        FastModbusSlave(
-                            result.slave_id,
-                            result.serial_num,
-                            self.comm_params.baudrate,
-                            self.comm_params.parity,
-                        )
-                    )
-                except ModbusIOException:
-                    pass
-                except (
-                    ConnectionException,
-                    asyncio.TimeoutError,
-                ) as e:
-                    logging.error(f"Error in execute scan: {e}")
+                result = await self.execute(
+                    request=FastModbusContinueScanRequest(), no_response_expected=False
+                )
+                if type(result) is FastModbusScanEndResponse:
                     break
-        except (
-            ModbusIOException,
-            ConnectionException,
-            asyncio.TimeoutError,
-            Exception,
-        ) as e:
-            logging.error(f"Error in execute scan Modbus: {e}")
+                slave_map.append(
+                    FastModbusSlave(
+                        result.slave_id,
+                        result.serial_num,
+                        self.comm_params.baudrate,
+                        self.comm_params.parity
+                    )
+                )
+                print(slave_map)
+        except Exception as e:
+            # traceback.print_exc()
+            print(f"GOT IT: {e}")
+            return []
         finally:
-            # Восстанавливаем оригинальные параметры
-            self.ctx.retries = original_retries
-            self.ctx.framer = original_framer
+            self.ctx.retries = base_retries
+            self.ctx.framer = base_framer
 
             return slave_map

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Modbus Scanner</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-12">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-blue-400">Wirenboard Modbus MQTT Manager</h1>
+                    <p class="text-gray-400 mt-2">Интерфейс для сканирования и взаимодействия с Wirenboard Modbus устройствами</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Scan Panel -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+                    <h2 class="text-xl font-semibold text-blue-400 mb-4 flex items-center">
+                        <i class="fas fa-bolt mr-2"></i> Сканирование
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Выберите порт для сканирования</label>
+                            <select id="portSelect" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <option value="" class="bg-gray-700">Выберите порт</option>
+                            </select>
+                        </div>
+                        
+                        <button id="scanButton" onclick="startScan()" class="scan-button w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center" disabled>
+                            <i class="fas fa-search mr-2"></i> Сканировать
+                        </button>
+                        
+                        <div id="scanStatus" class="mt-4 text-center text-sm text-gray-400 hidden">
+                            <i class="fas fa-spinner fa-spin mr-2"></i> Сканирование запущено...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Panel -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-800 rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-purple-400 flex items-center">
+                            <i class="fas fa-terminal mr-2"></i> Логи сканирования
+                        </h2>
+                        <button onclick="clearLogs()" class="text-sm text-gray-400 hover:text-white flex items-center">
+                            <i class="fas fa-trash mr-1"></i> Очистить
+                        </button>
+                    </div>
+                    
+                    <div id="logsContainer" class="bg-gray-900 rounded-lg p-4 h-96 overflow-y-auto font-mono text-sm">
+                        <div id="logsContent" class="text-gray-300">
+                            <p class="text-gray-500 italic">Логи сканирования будут отображаться здесь...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>Fast Modbus Scanner &copy; 2026 - Современное решение для сканирования Modbus устройств</p>
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
