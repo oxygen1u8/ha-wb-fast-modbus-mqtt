@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 # Глобальная переменная для хранения пути к конфигурации
@@ -18,6 +19,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Fast Modbus Scanner", version="1.0.0")
+
+# Добавляем middleware для CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Разрешаем все источники (для тестирования)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 templates = Jinja2Templates(directory="webapp/templates")
 app.mount("/static", StaticFiles(directory="webapp/static"), name="static")
 

@@ -1,8 +1,11 @@
 // Функция загрузки портов
 async function loadPorts() {
     try {
+        console.log('Loading ports from /ports endpoint...');
         const response = await fetch('/ports');
+        console.log('Response status:', response.status);
         const data = await response.json();
+        console.log('Received data:', data);
         
         if (data.error) {
             console.error('Error loading ports:', data.error);
@@ -21,6 +24,7 @@ async function loadPorts() {
             
             // Проверяем, есть ли порты в ответе
             if (data.ports && Array.isArray(data.ports) && data.ports.length > 0) {
+                console.log('Found ports:', data.ports);
                 data.ports.forEach(port => {
                     // Проверяем, что порт не пустой
                     if (port && typeof port === 'string' && port.trim() !== "") {
@@ -30,6 +34,7 @@ async function loadPorts() {
                 portSelect.disabled = false;
             } else {
                 // Если порты отсутствуют, показываем сообщение
+                console.log('No ports found');
                 portSelect.innerHTML += '<option value="" class="bg-gray-700" disabled>Порты не найдены</option>';
                 portSelect.disabled = true;
             }
