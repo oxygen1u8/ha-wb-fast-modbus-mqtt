@@ -18,10 +18,21 @@ async function loadPorts() {
         } else {
             const portSelect = document.getElementById('portSelect');
             portSelect.innerHTML = '<option value="" class="bg-gray-700">Выберите порт</option>';
-            data.ports.forEach(port => {
-                portSelect.innerHTML += `<option value="${port}" class="bg-gray-700">${port}</option>`;
-            });
-            portSelect.disabled = false;
+            
+            // Проверяем, есть ли порты в ответе
+            if (data.ports && Array.isArray(data.ports) && data.ports.length > 0) {
+                data.ports.forEach(port => {
+                    // Проверяем, что порт не пустой
+                    if (port && typeof port === 'string' && port.trim() !== "") {
+                        portSelect.innerHTML += `<option value="${port}" class="bg-gray-700">${port}</option>`;
+                    }
+                });
+                portSelect.disabled = false;
+            } else {
+                // Если порты отсутствуют, показываем сообщение
+                portSelect.innerHTML += '<option value="" class="bg-gray-700" disabled>Порты не найдены</option>';
+                portSelect.disabled = true;
+            }
         }
         
         // Включаем кнопку при выборе порта

@@ -110,7 +110,7 @@ async def get_ports():
     try:
         with open(path_to_options, "r", encoding="utf-8") as f:
             data = json.load(f)
-        ports = [port["Port"] for port in data["Serial port config"]]
+        ports = [port["Port"] for port in data["Serial port config"] if port.get("Port") and port["Port"].strip()]
         return {"ports": ports}
     except Exception as e:
         return {"ports": [], "error": str(e)}
