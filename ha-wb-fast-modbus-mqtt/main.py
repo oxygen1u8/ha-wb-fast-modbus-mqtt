@@ -125,6 +125,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     path_to_options = args.options
+
+    logger.info("Open file options.json")
+    with open(path_to_options, "r", encoding="utf-8") as f:
+        logger.info(f.read())
     
     # Получаем порт из переменной окружения, если она установлена (для Home Assistant ingress)
     port = int(os.environ.get("PORT", 8000))
