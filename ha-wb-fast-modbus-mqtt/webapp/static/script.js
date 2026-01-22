@@ -82,7 +82,7 @@ function startScan() {
     status.classList.remove('hidden');
     
     // Выполняем POST запрос к API с указанием порта
-    fetch('/scan', {
+    fetch('./scan', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ function startScan() {
 
 // Функция для обновления логов
 function updateLogs() {
-    fetch('logs')
+    fetch('./logs')
     .then(response => response.json())
     .then(data => {
         const logsContent = document.getElementById('logsContent');
