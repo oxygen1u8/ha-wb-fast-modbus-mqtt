@@ -1,8 +1,13 @@
 // Функция загрузки портов
+const basePath = window.location.pathname.endsWith('/')
+    ? window.location.pathname
+    : window.location.pathname + '/';
+
+
 async function loadPorts() {
     try {
         console.log('Loading ports from /ports endpoint...');
-        const response = await fetch('ports');
+        const response = await fetch(basePath + '/ports');
         console.log('Response status:', response.status);
         const data = await response.json();
         console.log('Received data:', data);
@@ -82,7 +87,7 @@ function startScan() {
     status.classList.remove('hidden');
     
     // Выполняем POST запрос к API с указанием порта
-    fetch('./scan', {
+    fetch(basePath + 'scan', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -114,7 +119,7 @@ function startScan() {
 
 // Функция для обновления логов
 function updateLogs() {
-    fetch('./logs')
+    fetch(basePath + '/logs')
     .then(response => response.json())
     .then(data => {
         const logsContent = document.getElementById('logsContent');
