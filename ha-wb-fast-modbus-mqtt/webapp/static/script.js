@@ -4,6 +4,8 @@ async function loadPorts() {
             ? window.location.pathname
             : window.location.pathname + '/';
         console.log('Loading ports from /ports endpoint...');
+        tmp = basePath + 'ports'
+        console.log('Suka ebanaya: ', tmp)
         const response = await fetch(basePath + 'ports');
         console.log('Response status:', response.status);
         const data = await response.json();
