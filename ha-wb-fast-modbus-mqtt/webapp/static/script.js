@@ -2,7 +2,7 @@
 async function loadPorts() {
     try {
         console.log('Loading ports from /ports endpoint...');
-        const response = await fetch('./ports');
+        const response = await fetch('ports');
         console.log('Response status:', response.status);
         const data = await response.json();
         console.log('Received data:', data);
@@ -114,7 +114,7 @@ function startScan() {
 
 // Функция для обновления логов
 function updateLogs() {
-    fetch('/logs')
+    fetch('logs')
     .then(response => response.json())
     .then(data => {
         const logsContent = document.getElementById('logsContent');
