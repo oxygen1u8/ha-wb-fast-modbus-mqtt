@@ -2,7 +2,7 @@
 async function loadPorts() {
     try {
         console.log('Loading ports from /ports endpoint...');
-        const response = await fetch('/ports');
+        const response = await fetch('./ports');
         console.log('Response status:', response.status);
         const data = await response.json();
         console.log('Received data:', data);
