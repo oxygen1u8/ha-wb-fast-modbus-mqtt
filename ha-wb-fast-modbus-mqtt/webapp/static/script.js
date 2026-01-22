@@ -4,7 +4,7 @@ async function loadPorts() {
             ? window.location.pathname
             : window.location.pathname + '/';
         console.log('Loading ports from /ports endpoint...');
-        const response = await fetch(basePath + '/ports');
+        const response = await fetch(basePath + 'ports');
         console.log('Response status:', response.status);
         const data = await response.json();
         console.log('Received data:', data);
@@ -123,7 +123,9 @@ function updateLogs() {
     const basePath = window.location.pathname.endsWith('/')
             ? window.location.pathname
             : window.location.pathname + '/';
-    fetch(basePath + '/logs')
+    const tmp = basePath + 'logs'
+    console.log(tmp)
+    fetch(tmp)
     .then(response => response.json())
     .then(data => {
         const logsContent = document.getElementById('logsContent');
