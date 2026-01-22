@@ -1,11 +1,8 @@
-// Функция загрузки портов
-const basePath = window.location.pathname.endsWith('/')
-    ? window.location.pathname
-    : window.location.pathname + '/';
-
-
 async function loadPorts() {
     try {
+        const basePath = window.location.pathname.endsWith('/')
+            ? window.location.pathname
+            : window.location.pathname + '/';
         console.log('Loading ports from /ports endpoint...');
         const response = await fetch(basePath + '/ports');
         console.log('Response status:', response.status);
@@ -85,6 +82,10 @@ function startScan() {
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Сканирование...';
     status.classList.remove('hidden');
+
+    const basePath = window.location.pathname.endsWith('/')
+            ? window.location.pathname
+            : window.location.pathname + '/';
     
     // Выполняем POST запрос к API с указанием порта
     fetch(basePath + 'scan', {
@@ -119,6 +120,9 @@ function startScan() {
 
 // Функция для обновления логов
 function updateLogs() {
+    const basePath = window.location.pathname.endsWith('/')
+            ? window.location.pathname
+            : window.location.pathname + '/';
     fetch(basePath + '/logs')
     .then(response => response.json())
     .then(data => {
