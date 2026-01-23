@@ -1,6 +1,6 @@
 name: "Wirenboard Fast Modbus to MQTT"
 description: "Hi, Mark!"
-version: "0.3593"
+version: "0.36"
 slug: "ha-wb-fast-modbus-mqtt"
 init: false
 arch:
@@ -25,7 +25,7 @@ options:
   #   Password: ""
 schema:
   Serial port config:
-    - Port: device(subsystem=tty)
+    - Port: str
   # MQTT data:
   #   Host: str
   #   Port: port
