@@ -4,14 +4,21 @@ from fastapi.staticfiles import StaticFiles
 from fastmodbus.manager import WirenboardModbusManager
 from .models import BusConfig, DeviceInfo, ResponseScan, ResponsePorts
 import logging
+import time
 from pathlib import Path
+from .log import LogCaptureHandler
+
+log_capture_handler = LogCaptureHandler()
 
 app = FastAPI(title="Wirenboard Modbus manager", version="0.1.0")
 templates = Jinja2Templates(directory=f"{Path(__file__).parent.resolve()}/templates")
-app.mount("/static", StaticFiles(directory=f"{Path(__file__).parent.resolve()}/static", html=True), name="static")
+app.mount(
+    "/static",
+    StaticFiles(directory=f"{Path(__file__).parent.resolve()}/static", html=True),
+    name="static",
+)
 
-
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, handlers=[log_capture_handler])
 
 
 @app.get("/")
@@ -19,12 +26,52 @@ async def read_root(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
+        context={"content": "", "active_tab": "devices"},
+    )
+
+
+@app.get("/serial")
+async def read_devices(request: Request):
+    device_content = templates.TemplateResponse(
+        request=request, name="modules/serial.html", context={}
+    ).body.decode("utf-8")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"content": device_content, "active_tab": "serial"},
+    )
+
+
+@app.get("/devices")
+async def read_settings(request: Request):
+    settings_content = templates.TemplateResponse(
+        request=request, name="modules/devices.html", context={}
+    ).body.decode("utf-8")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"content": settings_content, "active_tab": "devices"},
+    )
+
+
+@app.get("/logs")
+async def read_logs(request: Request):
+    logs_content = templates.TemplateResponse(
+        request=request, name="modules/logs.html", context={}
+    ).body.decode("utf-8")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"content": logs_content, "active_tab": "logs"},
     )
 
 
 @app.get("/ports", response_model=ResponsePorts)
 def get_ports():
-    if not hasattr(app, 'ports'):
+    if not hasattr(app, "ports"):
         app.ports = []
     logging.info(f"Response: {app.ports}")
     return ResponsePorts(port_list=app.ports)
@@ -60,3 +107,28 @@ async def scan(config: BusConfig):
     except Exception as e:
         logging.error(f"Ошибка при сканировании: {e}")
         return ResponseScan(slave_list=None)
+
+
+
+@app.get("/logs/output")
+def get_logs():
+    # Ограничиваем количество логов, отправляемых на фронтенд (последние 100 записей)
+    max_logs = 100
+    recent_logs = log_capture_handler.log_records[-max_logs:] if log_capture_handler.log_records else []
+    
+    logs = []
+    for record in recent_logs:
+        # Используем правильный способ получения времени записи лога
+        timestamp = getattr(record, 'asctime', None)
+        if timestamp is None:
+            # Если asctime отсутствует, форматируем время вручную
+            timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(record.created))
+        logs.append(
+            {
+                "timestamp": timestamp,
+                "level": record.levelname,
+                "message": record.getMessage(),
+            }
+        )
+    log_capture_handler.log_records.clear()
+    return {"logs": logs}

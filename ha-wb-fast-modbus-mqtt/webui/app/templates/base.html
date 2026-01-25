@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html class="dark" lang="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>{% block title %}Таблица обнаруженных устройств Modbus{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="./static/script.js?v=1.3"></script>
+    <link rel="stylesheet" href="./static/style.css">
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-200">
+    <div class="flex min-h-screen">
+        <aside
+            class="w-64 border-r border-slate-200 dark:border-border-dark bg-white dark:bg-background-dark flex flex-col fixed h-full z-20">
+            <a href="/" class="p-6 flex items-center gap-3">
+                <div
+                    class="size-10 bg-primary rounded-lg flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined text-2xl">settings_input_component</span>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold leading-tight">Modbus Manager</h1>
+                </div>
+            </a>
+            <nav class="flex-1 px-4 space-y-1 mt-4">
+                <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark rounded-lg transition-colors group tab-link {% if active_tab == 'devices' %}bg-primary/10 text-primary{% endif %}"
+                    href="/devices">
+                    <span class="material-symbols-outlined">hub</span>
+                    <span class="text-sm font-medium">Устройства</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark rounded-lg transition-colors group tab-link {% if active_tab == 'serial' %}bg-primary/10 text-primary{% endif %}"
+                    href="/serial">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">settings</span>
+                    <span class="text-sm font-medium">Последовательный порт</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-card-dark rounded-lg transition-colors group tab-link {% if active_tab == 'logs' %}bg-primary/10 text-primary{% endif %}"
+                    href="/logs">
+                    <span class="material-symbols-outlined">terminal</span>
+                    <span class="text-sm font-medium">Логи</span>
+                </a>
+            </nav>
+        </aside>
+        <main class="flex-1 ml-64 p-8">
+            <div class="max-w-6xl mx-auto">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+</body>
+
+</html>

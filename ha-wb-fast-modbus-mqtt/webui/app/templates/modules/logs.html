@@ -1,0 +1,52 @@
+<div>
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+            <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Логи работы
+                Wirenboard Modbus MQTT Manager</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-1">Просмотр системных событий в режиме реального
+                времени</p>
+        </div>
+    </div>
+    <div
+        class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-border-dark shadow-xl overflow-hidden flex flex-col h-[calc(100vh-14rem)]">
+        <div
+            class="px-6 py-4 border-b border-slate-200 dark:border-border-dark flex flex-wrap items-center justify-between gap-4 bg-slate-50 dark:bg-card-dark">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary">analytics</span>
+                <h3 class="font-bold text-slate-900 dark:text-white">Логи работы протокола</h3>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-border-dark">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input id="auto-scroll-checkbox" checked="" class="sr-only peer" type="checkbox" />
+                        <div
+                            class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary">
+                        </div>
+                        <span
+                            class="ml-2 text-sm font-medium text-slate-600 dark:text-slate-400">Автопрокрутка</span>
+                    </label>
+                </div>
+                <div class="flex gap-2">
+                    <button id="pause-button"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-background-dark hover:bg-slate-200 dark:hover:bg-border-dark text-slate-700 dark:text-slate-300 text-xs font-bold rounded border border-slate-200 dark:border-border-dark transition-colors">
+                        <span class="material-symbols-outlined text-lg">pause</span>
+                        Пауза
+                    </button>
+                    <button id="download-button"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-background-dark hover:bg-slate-200 dark:hover:bg-border-dark text-slate-700 dark:text-slate-300 text-xs font-bold rounded border border-slate-200 dark:border-border-dark transition-colors">
+                        <span class="material-symbols-outlined text-lg">download</span>
+                        Скачать файл
+                    </button>
+                    <button id="clear-button"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold rounded border border-red-200 dark:border-red-500/30 transition-colors">
+                        <span class="material-symbols-outlined text-lg">delete_sweep</span>
+                        Очистить логи
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="logs-container" class="flex-1 bg-background-dark p-6 font-mono text-sm overflow-y-auto log-terminal">
+            <!-- Логи будут загружаться сюда -->
+        </div>
+    </div>
+</div>
