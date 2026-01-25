@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO, handlers=[log_capture_handler])
 
 
 @app.get("/")
-async def read_root(request: Request):
+async def root(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -31,7 +31,7 @@ async def read_root(request: Request):
 
 
 @app.get("/serial")
-async def read_devices(request: Request):
+async def serial(request: Request):
     device_content = templates.TemplateResponse(
         request=request, name="modules/serial.html", context={}
     ).body.decode("utf-8")
@@ -44,7 +44,7 @@ async def read_devices(request: Request):
 
 
 @app.get("/devices")
-async def read_settings(request: Request):
+async def devices(request: Request):
     settings_content = templates.TemplateResponse(
         request=request, name="modules/devices.html", context={}
     ).body.decode("utf-8")
@@ -57,7 +57,7 @@ async def read_settings(request: Request):
 
 
 @app.get("/logs")
-async def read_logs(request: Request):
+async def logs(request: Request):
     logs_content = templates.TemplateResponse(
         request=request, name="modules/logs.html", context={}
     ).body.decode("utf-8")

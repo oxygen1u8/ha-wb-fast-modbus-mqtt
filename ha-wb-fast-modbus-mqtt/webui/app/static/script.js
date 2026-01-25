@@ -351,12 +351,8 @@ let logsInterval = null;
 
 // Запуск обновления логов сразу при загрузке страницы
 document.addEventListener('DOMContentLoaded', function () {
-    // Инициализируем события для текущей вкладки
-    // Для вкладки устройств
     loadSerialPorts();
     setupDeviceScanButton();
-    
-    // Запускаем обновление логов в фоне
     startLogsUpdate();
 });
 
