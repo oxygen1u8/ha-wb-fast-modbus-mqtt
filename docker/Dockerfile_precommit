@@ -1,0 +1,6 @@
+FROM python:3.11-alpine
+
+WORKDIR /work
+
+RUN apk add --no-cache git
+RUN pip install --no-cache-dir pre-commit

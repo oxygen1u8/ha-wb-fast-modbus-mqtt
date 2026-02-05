@@ -1,0 +1,12 @@
+FROM python:3.11-alpine
+
+WORKDIR /work
+
+RUN apk add --no-cache build-base
+
+COPY ha-wb-fast-modbus-mqtt/requirements.txt /work/requirements.txt
+RUN pip install --no-cache-dir -r /work/requirements.txt
+
+COPY ha-wb-fast-modbus-mqtt /work
+
+CMD ["pytest", "-q"]

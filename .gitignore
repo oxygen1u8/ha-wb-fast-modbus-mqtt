@@ -4,3 +4,4 @@ __pycache__/
 options.json
 .vscode/
 __main.py
+.pytest_cache/
