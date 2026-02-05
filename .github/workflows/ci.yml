@@ -24,4 +24,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run tests in container
-        run: ./docker-exec.sh pytest -q
+        run: ./docker-exec.sh cd ha-wb-fast-modbus-mqtt && pytest -q
