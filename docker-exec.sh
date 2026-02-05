@@ -28,7 +28,9 @@ fi
 SUBDIR="${PWD#${ROOT}}"
 WORKDIR="/work${SUBDIR}"
 
-IMAGE="wb-fast-modbus-$(basename "${DOCKERFILE}" | tr '[:upper:]' '[:lower:]')"
+DOCKERFILE_HASH="$(sha256sum "${DOCKERFILE}" | awk '{print $1}')"
+IMAGE_BASE="wb-fast-modbus-$(basename "${DOCKERFILE}" | tr '[:upper:]' '[:lower:]')"
+IMAGE="${IMAGE_BASE}-${DOCKERFILE_HASH:0:12}"
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 <command> [args...]"
