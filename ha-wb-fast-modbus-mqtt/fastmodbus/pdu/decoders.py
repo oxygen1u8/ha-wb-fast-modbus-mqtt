@@ -12,20 +12,22 @@ from pymodbus.pdu.exceptionresponse import ExceptionResponse
 from pymodbus.logging import Log
 from pymodbus.exceptions import ModbusException
 
+
 class CustomDecodePDU(DecodePDU):
     """
     Класс декодера PDU для протокола Fast Modbus.
-    
+
     Расширяет стандартный DecodePDU для поддержки специфичных возможностей
     протокола Fast Modbus от Wiren Board.
     """
+
     pdu_fast_modbus_table = []
 
     @classmethod
     def add_sub_pdu_ext(cls, req: type[ModbusPDU], resp: type[ModbusPDU]):
         """
         Добавляет PDU в таблицу для расширенной обработки.
-        
+
         Args:
             req: Тип запроса PDU
             resp: Тип ответа PDU
@@ -37,10 +39,10 @@ class CustomDecodePDU(DecodePDU):
     def lookupPduClass(self, data: bytes) -> type[ModbusPDU] | None:
         """
         Определяет класс PDU по коду функции.
-        
+
         Args:
             data: Данные для определения класса PDU
-            
+
         Returns:
             type[ModbusPDU] | None: Класс PDU или None, если не найден
         """
@@ -57,16 +59,17 @@ class CustomDecodePDU(DecodePDU):
             return None
         if (sub_func_code := pdu.decode_sub_function_code(data)) < 0:
             return pdu
-        return self.pdu_sub_table[func_code].get(sub_func_code, (None, None))[self.pdu_inx]
-
+        return self.pdu_sub_table[func_code].get(sub_func_code, (None, None))[
+            self.pdu_inx
+        ]
 
     def decode(self, frame: bytes) -> ModbusPDU | None:
         """
         Декодирует фрейм в объект PDU.
-        
+
         Args:
             frame: Байты фрейма для декодирования
-            
+
         Returns:
             ModbusPDU | None: Декодированный объект PDU или None
         """
@@ -96,7 +99,12 @@ class CustomDecodePDU(DecodePDU):
             #     if sub_class := lookup.get(pdu.sub_function_code, (None,None))[self.pdu_inx]:
             #         pdu = sub_class()
             #         pdu.decode(frame[1:])
-            Log.debug("decoded PDU function_code({} sub {}) -> {} ", pdu.function_code, pdu.sub_function_code, str(pdu))
+            Log.debug(
+                "decoded PDU function_code({} sub {}) -> {} ",
+                pdu.function_code,
+                pdu.sub_function_code,
+                str(pdu),
+            )
             return pdu
         except (ModbusException, ValueError, IndexError) as exc:
             Log.warning("Unable to decode frame {}", exc)

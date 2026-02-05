@@ -44,11 +44,10 @@ class FastModbusSerialResponse(FastModbusPDU):
         self.modbus_cmd, self.msg_size = params[2:4]
 
         for i in range(7, len(data), 2):
-            params = struct.unpack(">H", data[i:i+2])
+            params = struct.unpack(">H", data[i : i + 2])
             self.registers.append(params[0])
 
         self.data = data[7:]
-
 
     @classmethod
     def decode_sub_function_code(cls, data: bytes):

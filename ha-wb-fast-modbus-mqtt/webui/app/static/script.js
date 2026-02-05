@@ -29,7 +29,7 @@ async function loadSerialPorts() {
         if (response.ok) {
             const data = await response.json();
             const portSelect = document.getElementById('port-select');
-            
+
             if (portSelect) {
                 // Очищаем существующие опции
                 portSelect.innerHTML = '';
@@ -54,13 +54,13 @@ async function loadSerialPorts() {
 function updateDevicesTable(devices) {
     const tableBody = document.getElementById('devices-table-body');
     if (!tableBody) return;
-    
+
     tableBody.innerHTML = '';
-    
+
     devices.forEach(device => {
         const row = document.createElement('tr');
         row.className = 'hover:bg-slate-50 dark:hover:bg-border-dark/20 transition-colors';
-        
+
         row.innerHTML = `
             <td class="px-6 py-4">
                 <div class="text-sm font-bold text-slate-900 dark:text-white">${device.slave_name || 'Неизвестно'}</div>
@@ -77,7 +77,7 @@ function updateDevicesTable(devices) {
                 </button>
             </td>
         `;
-        
+
         tableBody.appendChild(row);
     });
 }
@@ -120,7 +120,7 @@ function setupDeviceScanButton() {
 
                 // Собираем выбранные типы четности
                 const selectedParities = [];
-                
+
                 // Находим чекбоксы четности по их тексту
                 const parityLabels = document.querySelectorAll('label.flex.items-center.gap-3.cursor-pointer.group');
                 parityLabels.forEach(label => {
@@ -157,12 +157,12 @@ function setupDeviceScanButton() {
                 if (response.ok) {
                     const result = await response.json();
                     console.log('Scan result:', result);
-                    
+
                     // Обновляем таблицу устройств
                     if (result.slave_list) {
                         updateDevicesTable(result.slave_list);
                     }
-                    
+
                     alert('Сканирование завершено');
                 } else {
                     console.error('Ошибка сканирования:', response.status);
@@ -186,10 +186,10 @@ function setupDeviceScanButton() {
 function displayLogs(logs) {
     const logsContainer = document.getElementById('logs-container');
     if (!logsContainer) return;
-    
+
     // Сохраняем текущую позицию прокрутки
     const isScrolledToBottom = logsContainer.scrollHeight - logsContainer.clientHeight <= logsContainer.scrollTop + 1;
-    
+
     // Получаем существующие логи из localStorage
     let existingLogs = [];
     try {
@@ -200,20 +200,20 @@ function displayLogs(logs) {
     } catch (e) {
         console.warn('Ошибка при чтении логов из localStorage:', e);
     }
-    
+
     // Добавляем только новые логи
     let newLogsAdded = 0;
     logs.forEach(log => {
         // Создаем уникальный ID для лога
         const logId = `${log.timestamp}-${log.level}-${log.message}`;
-        
+
         // Проверяем, есть ли уже такой лог в контейнере по data-log-id
         const existingLog = logsContainer.querySelector(`[data-log-id="${logId}"]`);
         if (!existingLog) {
             const logEntry = document.createElement('div');
             logEntry.className = 'flex gap-4 log-entry';
             logEntry.setAttribute('data-log-id', logId);
-            
+
             // Форматируем уровень лога
             let levelClass = '';
             let levelText = '';
@@ -238,33 +238,33 @@ function displayLogs(logs) {
                     levelClass = 'text-slate-500';
                     levelText = `[${log.level}]`;
             }
-            
+
             logEntry.innerHTML = `
                 <span class="text-slate-500 shrink-0">${log.timestamp}</span>
                 <span class="${levelClass} font-bold shrink-0">${levelText}</span>
                 <span class="text-slate-300">${log.message}</span>
             `;
-            
+
             logsContainer.appendChild(logEntry);
             newLogsAdded++;
-            
+
             // Добавляем лог в массив существующих логов
             existingLogs.push(log);
         }
     });
-    
+
     // Ограничиваем количество логов в localStorage (например, последние 1000 записей)
     if (existingLogs.length > 1000) {
         existingLogs = existingLogs.slice(-1000);
     }
-    
+
     // Сохраняем обновленные логи в localStorage
     try {
         localStorage.setItem('storedLogs', JSON.stringify(existingLogs));
     } catch (e) {
         console.warn('Ошибка при сохранении логов в localStorage:', e);
     }
-    
+
     // Автопрокрутка если включена и если мы были внизу
     const autoScrollCheckbox = document.getElementById('auto-scroll-checkbox');
     if (autoScrollCheckbox && autoScrollCheckbox.checked && isScrolledToBottom) {
@@ -296,16 +296,16 @@ function restoreLogsFromStorage() {
             if (logsContainer) {
                 // Очищаем контейнер перед восстановлением
                 logsContainer.innerHTML = '';
-                
+
                 const logs = JSON.parse(storedLogs);
                 logs.forEach(log => {
                     // Создаем уникальный ID для лога
                     const logId = `${log.timestamp}-${log.level}-${log.message}`;
-                    
+
                     const logEntry = document.createElement('div');
                     logEntry.className = 'flex gap-4 log-entry';
                     logEntry.setAttribute('data-log-id', logId);
-                    
+
                     // Форматируем уровень лога
                     let levelClass = '';
                     let levelText = '';
@@ -330,13 +330,13 @@ function restoreLogsFromStorage() {
                             levelClass = 'text-slate-500';
                             levelText = `[${log.level}]`;
                     }
-                    
+
                     logEntry.innerHTML = `
                         <span class="text-slate-500 shrink-0">${log.timestamp}</span>
                         <span class="${levelClass} font-bold shrink-0">${levelText}</span>
                         <span class="text-slate-300">${log.message}</span>
                     `;
-                    
+
                     logsContainer.appendChild(logEntry);
                 });
             }
@@ -359,10 +359,10 @@ document.addEventListener('DOMContentLoaded', function () {
 function startLogsUpdate() {
     // Восстанавливаем логи из localStorage при старте
     restoreLogsFromStorage();
-    
+
     // Загружаем логи сразу
     loadLogs();
-    
+
     // Запускаем обновление каждые 2 секунды
     logsInterval = setInterval(loadLogs, 2000);
 }
@@ -373,7 +373,7 @@ let lastDisplayedLogId = 0;
 function startLogsUpdate() {
     // Загружаем логи сразу
     loadLogs();
-    
+
     // Запускаем обновление каждые 2 секунды
     logsInterval = setInterval(loadLogs, 2000);
 }
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-    
+
     // Обработка кнопки паузы
     const pauseButton = document.getElementById('pause-button');
     if (pauseButton) {
@@ -413,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-    
+
     // Обработка кнопки очистки логов
     const clearButton = document.getElementById('clear-button');
     if (clearButton) {
@@ -434,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-    
+
     // Обработка кнопки скачивания логов
     const downloadButton = document.getElementById('download-button');
     if (downloadButton) {
@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function () {
             alert('Функция скачивания логов пока не реализована');
         });
     }
-    
+
     // Обработка переключения вкладок
     const tabLinks = document.querySelectorAll('.tab-link');
     tabLinks.forEach(link => {

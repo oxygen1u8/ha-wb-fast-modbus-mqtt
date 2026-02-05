@@ -80,7 +80,7 @@ def get_ports():
 @app.post("/scan", response_model=ResponseScan)
 async def scan(config: BusConfig):
     try:
-        logging.info(f"Start scan on:")
+        logging.info("Start scan on:")
         logging.info(f"Port: {config.port}")
         logging.info(f"Baudrate: {config.baudrate}")
         logging.info(f"Parity: {config.parity}")
@@ -109,20 +109,25 @@ async def scan(config: BusConfig):
         return ResponseScan(slave_list=None)
 
 
-
 @app.get("/logs/output")
 def get_logs():
     # Ограничиваем количество логов, отправляемых на фронтенд (последние 100 записей)
     max_logs = 100
-    recent_logs = log_capture_handler.log_records[-max_logs:] if log_capture_handler.log_records else []
-    
+    recent_logs = (
+        log_capture_handler.log_records[-max_logs:]
+        if log_capture_handler.log_records
+        else []
+    )
+
     logs = []
     for record in recent_logs:
         # Используем правильный способ получения времени записи лога
-        timestamp = getattr(record, 'asctime', None)
+        timestamp = getattr(record, "asctime", None)
         if timestamp is None:
             # Если asctime отсутствует, форматируем время вручную
-            timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(record.created))
+            timestamp = time.strftime(
+                "%Y-%m-%d %H:%M:%S", time.localtime(record.created)
+            )
         logs.append(
             {
                 "timestamp": timestamp,

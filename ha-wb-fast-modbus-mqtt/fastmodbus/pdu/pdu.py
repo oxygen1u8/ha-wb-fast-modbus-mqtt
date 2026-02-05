@@ -6,19 +6,18 @@ PDU (Protocol Data Unit) - это единица данных протокола
 """
 
 from pymodbus.pdu import ModbusPDU
-from pymodbus.pdu.decoders import DecodePDU
 from pymodbus.exceptions import ModbusIOException
-from pymodbus.pdu import ModbusPDU
 import struct
 
 
 class FastModbusPDU(ModbusPDU):
     """
     Базовый класс для PDU протокола Fast Modbus.
-    
+
     Расширяет стандартный ModbusPDU для поддержки специфичных возможностей
     протокола Fast Modbus от Wiren Board.
     """
+
     dev_id = 0xFD
     function_code = 0x46
 
@@ -34,7 +33,7 @@ class FastModbusPDU(ModbusPDU):
     ):
         """
         Инициализирует объект PDU протокола Fast Modbus.
-        
+
         Args:
             data (bytes | None): Данные для передачи
             transaction_id: Идентификатор транзакции
@@ -52,10 +51,10 @@ class FastModbusPDU(ModbusPDU):
     def encode(self) -> bytes:
         """
         Кодирует PDU в байты для передачи.
-        
+
         Returns:
             bytes: Закодированные данные PDU
-            
+
         Raises:
             ModbusIOException: Если отсутствует атрибут sub_function_code
         """
@@ -67,5 +66,3 @@ class FastModbusPDU(ModbusPDU):
         if self.data is not None:
             result_data += struct.pack(">b", self.data)
         return result_data
-
-

@@ -7,20 +7,15 @@
 """
 
 from pymodbus.client import AsyncModbusSerialClient
-from pymodbus.pdu.decoders import DecodePDU
-from pymodbus.exceptions import ModbusIOException, ConnectionException
 from .pdu.scan import (
     FastModbusScanRequest,
     FastModbusContinueScanRequest,
     FastModbusScanEndResponse,
 )
-from .pdu.serial import FastModbusSerialRequest, FastModbusSerialResponse
+from .pdu.serial import FastModbusSerialRequest
 from .pdu.decoders import CustomDecodePDU
 from .rtu.scan import FastScanFramerRTU
 from .slave import FastModbusSlave
-import asyncio
-import traceback
-import logging
 
 
 class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
@@ -38,7 +33,6 @@ class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
         count: int = 1,
         no_response_expected: bool = False,
     ):
-        
         # self.read_input_registers()
         return await self.execute(
             no_response_expected,
@@ -47,7 +41,7 @@ class AsyncFastModbusSerialClient(AsyncModbusSerialClient):
                 address=address,
                 modbus_function_code=0x04,
                 count=count,
-            )
+            ),
         )
 
     async def scan(self) -> list[FastModbusSlave]:

@@ -12,18 +12,18 @@ from pymodbus.logging import Log
 class FastScanFramerRTU(FramerRTU):
     """
     Класс фреймера для сканирования протокола Fast Modbus.
-    
+
     Расширяет стандартный FramerRTU для поддержки специфичных возможностей
     протокола Fast Modbus от Wiren Board.
     """
-    
+
     def decode(self, data: bytes) -> tuple[int, int, int, bytes]:
         """
         Декодирует ADU (Application Data Unit).
-        
+
         Args:
             data: Данные для декодирования
-            
+
         Returns:
             tuple[int, int, int, bytes]: Кортеж с информацией о декодированном фрейме
         """
@@ -51,15 +51,17 @@ class FastScanFramerRTU(FramerRTU):
             if not (size := pdu_class.calculateRtuFrameSize(data[used_len:])):
                 Log.debug("Frame - rtu_byte_count_pos wrong")
                 return 0, dev_id, 0, self.EMPTY
-            if data_len < used_len +size:
+            if data_len < used_len + size:
                 Log.debug("Frame - not ready")
                 return 0, dev_id, 0, self.EMPTY
             for test_len in range(data_len, used_len + size - 1, -1):
-                start_crc = test_len -2
+                start_crc = test_len - 2
                 crc = data[start_crc : start_crc + 2]
                 crc_val = (int(crc[0]) << 8) + int(crc[1])
-                if not FramerRTU.check_CRC(data[used_len : start_crc], crc_val):
-                    Log.debug("Frame check failed, possible garbage after frame, testing..")
+                if not FramerRTU.check_CRC(data[used_len:start_crc], crc_val):
+                    Log.debug(
+                        "Frame check failed, possible garbage after frame, testing.."
+                    )
                     continue
                 return data_len, dev_id, 0, data[used_len + 1 : start_crc]
         return 0, 0, 0, self.EMPTY

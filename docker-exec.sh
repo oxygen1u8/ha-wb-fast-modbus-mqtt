@@ -43,7 +43,7 @@ if ! docker image inspect "${IMAGE}" >/dev/null 2>&1; then
 fi
 
 CMD="$*"
-CACHE_SETUP='export HOME=/tmp; export XDG_CACHE_HOME=/tmp/.cache; mkdir -p "$XDG_CACHE_HOME"'
+CACHE_SETUP='export HOME=/work; export XDG_CACHE_HOME=/work/.cache; mkdir -p "$XDG_CACHE_HOME"'
 
 docker run --rm -it \
   --user "$(id -u):$(id -g)" \

@@ -14,7 +14,6 @@ class BusConfig(BaseModel):
         if not len(v):
             raise ValueError("Too small baudrate list size")
         return v
-    
 
     @field_validator("parity")
     @classmethod

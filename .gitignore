@@ -5,3 +5,5 @@ options.json
 .vscode/
 __main.py
 .pytest_cache/
+.local/
+.cache/

@@ -1,6 +1,5 @@
 from .asyncfastmodbus import AsyncFastModbusSerialClient
 from .wbslave import WirenboardModbusSlave
-import asyncio
 import logging
 
 
@@ -43,7 +42,9 @@ class WirenboardModbusManager:
                         firmware_version = await client.read_input_registers_by_serial(
                             slave.serial_num, 0xFA, 16
                         )
-                        firmware_version = "".join(chr(c) for c in firmware_version.registers)
+                        firmware_version = "".join(
+                            chr(c) for c in firmware_version.registers
+                        )
                         all_slaves.append(
                             WirenboardModbusSlave(
                                 slave_name,
