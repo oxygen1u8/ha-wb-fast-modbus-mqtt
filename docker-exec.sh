@@ -45,7 +45,12 @@ fi
 CMD="$*"
 CACHE_SETUP='export HOME=/work; export XDG_CACHE_HOME=/work/.cache; mkdir -p "$XDG_CACHE_HOME"'
 
-docker run --rm -it \
+TTY_ARGS=()
+if [ -t 1 ]; then
+  TTY_ARGS=(-it)
+fi
+
+docker run --rm "${TTY_ARGS[@]}" \
   --user "$(id -u):$(id -g)" \
   -v "${ROOT}":/work \
   -w "${WORKDIR}" \
