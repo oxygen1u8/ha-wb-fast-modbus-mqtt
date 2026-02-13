@@ -4,7 +4,5 @@ set -e
 
 source .venv/bin/activate
 
-cat /data/options.json
-
 echo "Start main.py"
 python3 main.py --options /data/options.json
