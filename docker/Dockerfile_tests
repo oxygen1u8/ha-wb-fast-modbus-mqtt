@@ -4,5 +4,5 @@ WORKDIR /work
 
 RUN apk add --no-cache build-base
 
-COPY ha-wb-fast-modbus-mqtt/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+COPY ha-wb-fast-modbus-mqtt/pyproject.toml /tmp/pyproject.toml
+RUN pip install --no-cache-dir -e /tmp/pyproject.toml[dev]
