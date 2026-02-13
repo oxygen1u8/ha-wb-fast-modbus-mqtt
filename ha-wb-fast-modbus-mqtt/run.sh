@@ -5,4 +5,4 @@ set -e
 source .venv/bin/activate
 
 echo "Start main.py"
-python3 main.py --options /data/options.json
+ha-wb-fast-modbus-mqtt --options /data/options.json
