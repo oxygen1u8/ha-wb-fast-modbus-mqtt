@@ -1,8 +1,0 @@
-FROM python:3.11-alpine
-
-WORKDIR /work
-
-RUN apk add --no-cache build-base
-
-COPY ha-wb-fast-modbus-mqtt /tmp/ha-wb-fast-modbus-mqtt
-RUN pip install --no-cache-dir -e /tmp/ha-wb-fast-modbus-mqtt[dev]

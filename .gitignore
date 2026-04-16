@@ -8,3 +8,4 @@ __main.py
 .local/
 .cache/
 *egg-info/
+.ruff_cache/
