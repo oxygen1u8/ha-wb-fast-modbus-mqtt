@@ -114,7 +114,7 @@ async def scan(bus_id: int, db: AsyncSession = Depends(get_async_db)):
                     model=slave.device_name,
                     baudrate=slave.baudrate,
                     parity=slave.parity,
-                    slave_address=int(slave.slave_id),
+                    slave_address=slave.slave_id,
                     serial_num=slave.serial_num,
                     bus_id=bus_id,
                 ).model_dump()
