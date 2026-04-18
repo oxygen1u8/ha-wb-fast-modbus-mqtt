@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Literal, List
+from pydantic import BaseModel, Field
+from typing import Literal
 
 
 class Bus(BaseModel):

@@ -1,6 +1,5 @@
 from typing import List
-from decimal import Decimal
-from sqlalchemy import String, Boolean, Integer, Numeric, ARRAY, ForeignKey
+from sqlalchemy import String, Integer, ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base

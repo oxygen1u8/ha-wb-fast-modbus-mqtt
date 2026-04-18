@@ -9,3 +9,4 @@ __main.py
 .cache/
 *egg-info/
 .ruff_cache/
+*.db

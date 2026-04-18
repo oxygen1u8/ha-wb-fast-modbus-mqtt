@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field
 from typing import Literal
+
 
 class Device(BaseModel):
     id: int = Field(..., description="Уникальный идентификатор устройства")
