@@ -1,7 +1,7 @@
 from typing import List
-from fastapi import APIRouter, Request, Depends, status
+from fastapi import APIRouter, Request, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from app.templates import templates
 from app.db_depends import get_async_db
 from app.schemas.bus import Bus as BusSchema, BusCreate
@@ -47,8 +47,8 @@ async def get_bus(db: AsyncSession = Depends(get_async_db)):
                 ports.append(config["Port"])
         except Exception as e:
             print(f"Ошибка при чтении конфигурации портов: {e}")
+            raise
 
-        tmp = []
         for port in ports:
             bus_list.append(BusCreate(name=port, baudrate=[9600, 115200], parity=["N"]))
         bus_list = [BusModel(**bus.model_dump()) for bus in bus_list]
@@ -58,14 +58,30 @@ async def get_bus(db: AsyncSession = Depends(get_async_db)):
     return bus_list
 
 
-@router.put("/bus", response_model=BusSchema)
-async def update_bus(bus: BusSchema, db: AsyncSession = Depends(get_async_db)):
-    pass
+@router.put("/bus/{bus_id}", response_model=BusSchema)
+async def update_bus(
+    bus_id: int, bus: BusCreate, db: AsyncSession = Depends(get_async_db)
+):
+    stmt = select(BusModel).where(BusModel.id == bus_id)
+    db_bus = await db.scalars(stmt)
+    db_bus = bus.first()
+    if bus is None:
+        raise HTTPException(
+            status_code=404, detail=f"Non-exist bus with bus_id={bus_id}"
+        )
+    update_data = bus.model_dump(exclude_unset=True)
+    await db.execute(
+        update(BusModel).where(BusModel.id == bus_id).values(**update_data)
+    )
+    await db.commit()
+    return db_bus
 
 
 @router.get("/bus/{bus_id}", response_model=List[DeviceSchema])
 async def get_bus_devices(bus_id: int, db: AsyncSession = Depends(get_async_db)):
-    pass
+    stmt = select(DeviceModel).where(DeviceModel.bus_id == bus_id)
+    devices = await db.scalars(stmt)
+    return devices.all()
 
 
 @router.post(
