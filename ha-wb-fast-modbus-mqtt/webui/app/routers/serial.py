@@ -1,3 +1,5 @@
+import aiofiles
+import logging
 from typing import List
 from fastapi import APIRouter, Request, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -5,11 +7,10 @@ from sqlalchemy import select, update
 from app.templates import templates
 from app.db_depends import get_async_db
 from app.schemas.bus import Bus as BusSchema, BusCreate
-from app.schemas.device import Device as DeviceSchema
+from app.schemas.device import Device as DeviceSchema, DeviceCreate
 from app.models.bus import Bus as BusModel
 from app.models.device import Device as DeviceModel
-
-import logging
+from app.fastmodbus.manager import WirenboardModbusManager, WirenboardModbusSlave
 
 
 router = APIRouter(prefix="/serial", tags=["serial"])
@@ -41,13 +42,14 @@ async def get_bus(db: AsyncSession = Depends(get_async_db)):
         ports = []
 
         try:
-            with open(path_to_options, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            async with aiofiles.open(path_to_options, "r", encoding="utf-8") as file:
+                content = await file.read()
+                data = json.load(content)
             for config in data["Serial port config"]:
                 ports.append(config["Port"])
         except Exception as e:
             print(f"Ошибка при чтении конфигурации портов: {e}")
-            raise
+            raise HTTPException(status_code=500)
 
         for port in ports:
             bus_list.append(BusCreate(name=port, baudrate=[9600, 115200], parity=["N"]))
@@ -85,7 +87,42 @@ async def get_bus_devices(bus_id: int, db: AsyncSession = Depends(get_async_db))
 
 
 @router.post(
-    "/scan", response_model=List[DeviceSchema], status_code=status.HTTP_201_CREATED
+    "/bus/{bus_id}/scan",
+    response_model=List[DeviceSchema],
+    status_code=status.HTTP_201_CREATED,
 )
-async def scan(db: AsyncSession = Depends(get_async_db)):
-    pass
+async def scan(bus_id: int, db: AsyncSession = Depends(get_async_db)):
+    stmt = select(BusModel).where(BusModel.id == bus_id)
+    bus = await db.scalar(stmt)
+
+    if bus is None:
+        raise HTTPException(
+            status_code=404, detail=f"Non-exist bus with bus_id={bus_id}"
+        )
+
+    try:
+        logging.info("Start scan on:")
+        logging.info(f"Port: {bus.name}")
+        logging.info(f"Baudrate: {bus.baudrate}")
+        logging.info(f"Parity: {bus.parity}")
+
+        manager = WirenboardModbusManager(bus.name, bus.baudrate, bus.parity)
+        slave_list = await manager.scan_bus()
+        db_devices = [
+            DeviceModel(
+                **DeviceCreate(
+                    model=slave.device_name,
+                    baudrate=slave.baudrate,
+                    parity=slave.parity,
+                    slave_address=int(slave.slave_id),
+                    serial_num=slave.serial_num,
+                    bus_id=bus_id,
+                ).model_dump()
+            )
+            for slave in slave_list
+        ]
+        db.add_all(db_devices)
+        await db.commit()
+        return db_devices
+    except Exception as e:
+        logging.error(f"Scanning error: {e}")
