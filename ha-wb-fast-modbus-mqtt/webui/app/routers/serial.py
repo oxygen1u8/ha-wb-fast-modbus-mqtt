@@ -50,17 +50,11 @@ async def get_bus(db: AsyncSession = Depends(get_async_db)):
 
         tmp = []
         for port in ports:
-            bus_list.append(
-                BusCreate(
-                    name=port,
-                    baudrate=[9600, 115200],
-                    parity=["N"]
-                )
-            )
+            bus_list.append(BusCreate(name=port, baudrate=[9600, 115200], parity=["N"]))
         bus_list = [BusModel(**bus.model_dump()) for bus in bus_list]
         db.add_all(bus_list)
         await db.commit()
-    
+
     return bus_list
 
 
