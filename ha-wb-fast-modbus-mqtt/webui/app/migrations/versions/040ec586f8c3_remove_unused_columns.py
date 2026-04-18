@@ -1,8 +1,8 @@
-"""Create bus and device tables
+"""Remove unused columns
 
-Revision ID: 7c8b511159e7
+Revision ID: 040ec586f8c3
 Revises: 
-Create Date: 2026-04-18 10:51:56.191968
+Create Date: 2026-04-18 11:16:31.335367
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '7c8b511159e7'
+revision: str = '040ec586f8c3'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,8 +24,6 @@ def upgrade() -> None:
     op.create_table('bus',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
-    sa.Column('baudrate', sa.ARRAY(sa.Integer()), nullable=False),
-    sa.Column('parity', sa.ARRAY(sa.String()), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('devices',
