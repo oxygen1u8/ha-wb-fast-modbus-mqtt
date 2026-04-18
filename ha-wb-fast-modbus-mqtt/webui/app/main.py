@@ -1,7 +1,5 @@
-from fastapi import FastAPI, Request, Query
-from fastapi.templating import Jinja2Templates
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from typing import Annotated, Optional
 from pathlib import Path
 import logging
 

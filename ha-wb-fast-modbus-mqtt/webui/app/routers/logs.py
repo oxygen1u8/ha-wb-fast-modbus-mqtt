@@ -1,13 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db_depends import get_async_db
+from fastapi import APIRouter, Request
 from app.templates import templates
 
 
-router = APIRouter(
-    prefix="/logs",
-    tags=["logs"]
-)
+router = APIRouter(prefix="/logs", tags=["logs"])
 
 
 @router.get("/")
