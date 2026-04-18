@@ -5,19 +5,19 @@ from app.templates import templates
 
 
 router = APIRouter(
-    prefix="/serial",
-    tags=["serial"]
+    prefix="/devices",
+    tags=["devices"]
 )
 
 
 @router.get("/")
 async def root(request: Request):
     content = templates.TemplateResponse(
-        request=request, name="modules/serial.html", context={}
+        request=request, name="modules/devices.html", context={}
     ).body.decode("utf-8")
 
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"content": content, "active_tab": "serial"},
+        context={"content": content, "active_tab": "devices"},
     )

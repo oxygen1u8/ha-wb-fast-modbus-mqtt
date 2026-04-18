@@ -2,35 +2,35 @@ from fastapi import FastAPI, Request, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from typing import Annotated, Optional
+from pathlib import Path
 import logging
+
+from app.templates import templates
+from app.routers import serial, devices, logs
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 app = FastAPI(
     title="Wirenboard Modbus manager",
     version="0.1.0",
 )
-app.mount("/static", StaticFiles(directory=f"app/static"), name="static")
-templates = Jinja2Templates(directory=f"app/static/templates")
+app.mount(
+    "/static",
+    StaticFiles(directory=f"{Path(__file__).parent.resolve()}/static"),
+    name="static",
+)
 
-
-logging.basicConfig(level=logging.INFO)
+app.include_router(serial.router)
+app.include_router(devices.router)
+app.include_router(logs.router)
 
 
 @app.get("/")
-async def root(
-    request: Request,
-    page: Optional[str] = Query(None, description="Page select")
-):
-    content = ""
-    active_tab = ""
-    if page is not None:
-        content = templates.TemplateResponse(
-            request=request, name=f"modules/{page}.html", context={}
-        ).body.decode("utf-8")
-        active_tab = page
-
+async def root(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"content": content, "active_tab": page},
+        context={"content": ""},
     )
