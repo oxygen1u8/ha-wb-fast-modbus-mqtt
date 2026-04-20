@@ -10,9 +10,9 @@ arch:
   - armv7
   - i386
 uart: true
-webui: http://[HOST]:[PORT:8000]
+webui: http://[HOST]:[PORT:8080]
 ingress: true
-ingress_port: 8000
+ingress_port: 8080
 options:
   Serial port config:
     - Port: ""
