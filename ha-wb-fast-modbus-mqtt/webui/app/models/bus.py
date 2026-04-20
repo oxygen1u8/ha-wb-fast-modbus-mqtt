@@ -8,7 +8,7 @@ from app.database import Base
 class Bus(Base):
     __tablename__ = "bus"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str] = mapped_column(String(100), unique=True)
     baudrate: Mapped[List[int]] = mapped_column(JSON, nullable=False, default=List)
     parity: Mapped[List[str]] = mapped_column(JSON, nullable=False, default=List)
     devices: Mapped[List["Device"]] = relationship("Device", back_populates="bus")
