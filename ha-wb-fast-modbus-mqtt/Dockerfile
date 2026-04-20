@@ -1,22 +1,19 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-COPY *.toml /
-COPY requirements.txt /
-COPY *.sh /
-COPY *.py /
-COPY fastmodbus /fastmodbus
-COPY webui /webui
+COPY requirements.txt /tmp/requirements.txt
 
-RUN apk add --no-cache python3 py3-pip
-RUN python3 -m venv .venv
+RUN apk add --no-cache python3 py3-pip && \
+    python3 -m venv /ha-wb-fast-modbus-mqtt/.venv && \
+    /ha-wb-fast-modbus-mqtt/.venv/bin/pip install --no-cache-dir -r /tmp/requirements.txt && \
+    rm -rf /tmp/requirements.txt
 
-# Установка зависимостей из requirements.txt первым шагом для лучшей кешируемости
-RUN .venv/bin/pip install --no-cache-dir -r requirements.txt
+COPY *.sh /ha-wb-fast-modbus-mqtt/
+COPY *.py /ha-wb-fast-modbus-mqtt/
+COPY webui /ha-wb-fast-modbus-mqtt/webui
 
-# Установка самого пакета в editable режиме без зависимостей, так как они уже установлены
-RUN .venv/bin/pip install -e . --no-deps
+RUN chmod a+x /ha-wb-fast-modbus-mqtt/run.sh
 
-RUN chmod a+x /run.sh
+WORKDIR /ha-wb-fast-modbus-mqtt
 
-CMD [ "/run.sh" ]
+CMD [ "./run.sh" ]
