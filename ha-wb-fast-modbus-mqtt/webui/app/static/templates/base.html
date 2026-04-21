@@ -11,8 +11,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
-    <script src="{{ app_base_path }}/static/script.js?v=1.9"></script>
-    <link rel="stylesheet" href="{{ app_base_path }}/static/style.css">
+    <style>{{ inline_style | safe }}</style>
 </head>
 
 <body
@@ -56,5 +55,6 @@
     </div>
 
 </body>
+<script>{{ inline_script | safe }}</script>
 
 </html>

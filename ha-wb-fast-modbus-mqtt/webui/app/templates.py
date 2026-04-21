@@ -1,8 +1,11 @@
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
+APP_DIR = Path(__file__).parent.resolve()
+STATIC_DIR = APP_DIR / "static"
+
 templates = Jinja2Templates(
-    directory=f"{Path(__file__).parent.resolve()}/static/templates"
+    directory=str(STATIC_DIR / "templates")
 )
 
 
@@ -24,5 +27,7 @@ def template_context(request, **context):
         "request": request,
         "root_path": request.scope.get("root_path", "").rstrip("/"),
         "app_base_path": app_base_path,
+        "inline_style": (STATIC_DIR / "style.css").read_text(encoding="utf-8"),
+        "inline_script": (STATIC_DIR / "script.js").read_text(encoding="utf-8"),
         **context,
     }
