@@ -19,3 +19,7 @@ class DeviceCreate(BaseModel):
     baudrate: int = Field(..., description="Скорость")
     parity: Literal["N", "E", "O"] = Field(..., description="Биты четности")
     bus_id: int = Field(..., description="Номер шины")
+
+
+class DeviceListDelete(BaseModel):
+    devices_id: list[int]

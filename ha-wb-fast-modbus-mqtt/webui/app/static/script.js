@@ -30,6 +30,7 @@ const PARITY_OPTIONS = [
     { value: "O", label: "Нечет (Odd)" },
 ];
 const APP_BASE_PATH = (document.body?.dataset.basePath || "").replace(/\/$/, "");
+const selectedDeviceIds = new Set();
 
 function buildAppUrl(path) {
     if (!path.startsWith("/")) {
@@ -106,9 +107,49 @@ function renderParityOptions(selectedValues = []) {
     `).join("");
 }
 
+function updateDeleteButtonVisibility() {
+    const deleteButton = document.getElementById("delete-devices-button");
+    if (!deleteButton) {
+        return;
+    }
+
+    deleteButton.classList.toggle("hidden", selectedDeviceIds.size === 0);
+}
+
+function syncSelectAllCheckbox() {
+    const selectAllCheckbox = document.getElementById("devices-select-all");
+    const deviceCheckboxes = Array.from(document.querySelectorAll(".device-select-checkbox"));
+
+    if (!selectAllCheckbox) {
+        return;
+    }
+
+    if (!deviceCheckboxes.length) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+        return;
+    }
+
+    const checkedCount = deviceCheckboxes.filter((checkbox) => checkbox.checked).length;
+    selectAllCheckbox.checked = checkedCount === deviceCheckboxes.length;
+    selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < deviceCheckboxes.length;
+}
+
+function refreshDeviceSelectionUi() {
+    syncSelectAllCheckbox();
+    updateDeleteButtonVisibility();
+}
+
 function updateDevicesTable(devices) {
     const tableBody = document.getElementById("devices-table-body");
     const emptyState = document.getElementById("devices-empty-state");
+    const nextDeviceIds = new Set(devices.map((device) => String(device.id)));
+
+    Array.from(selectedDeviceIds).forEach((deviceId) => {
+        if (!nextDeviceIds.has(String(deviceId))) {
+            selectedDeviceIds.delete(deviceId);
+        }
+    });
 
     if (!tableBody) {
         return;
@@ -120,6 +161,7 @@ function updateDevicesTable(devices) {
         if (emptyState) {
             emptyState.classList.remove("hidden");
         }
+        refreshDeviceSelectionUi();
         return;
     }
 
@@ -134,9 +176,21 @@ function updateDevicesTable(devices) {
         const model = device.model || "Неизвестно";
         const slaveAddress = Number(device.slave_address);
         const serialNum = Number(device.serial_num);
+        const deviceId = String(device.id);
         const deviceSettingsUrl = buildAppUrl(`/devices?device_id=${encodeURIComponent(device.id)}`);
 
         row.innerHTML = `
+            <td class="px-6 py-4">
+                <label class="inline-flex items-center justify-center cursor-pointer">
+                    <input
+                        class="device-select-checkbox h-4 w-4 rounded border-slate-300 dark:border-border-dark text-primary focus:ring-primary dark:bg-background-dark"
+                        type="checkbox"
+                        value="${deviceId}"
+                        ${selectedDeviceIds.has(deviceId) ? "checked" : ""}
+                        aria-label="Выбрать устройство ${escapeHtml(model)}"
+                    />
+                </label>
+            </td>
             <td class="px-6 py-4">
                 <div class="text-sm font-bold text-slate-900 dark:text-white">${escapeHtml(model)}</div>
             </td>
@@ -158,6 +212,20 @@ function updateDevicesTable(devices) {
 
         tableBody.appendChild(row);
     });
+
+    tableBody.querySelectorAll(".device-select-checkbox").forEach((checkbox) => {
+        checkbox.addEventListener("change", (event) => {
+            const { checked, value } = event.target;
+            if (checked) {
+                selectedDeviceIds.add(value);
+            } else {
+                selectedDeviceIds.delete(value);
+            }
+            refreshDeviceSelectionUi();
+        });
+    });
+
+    refreshDeviceSelectionUi();
 }
 
 function setStatus(message, tone = "muted") {
@@ -185,12 +253,18 @@ function setStatus(message, tone = "muted") {
 function setBusy(isBusy) {
     const scanButton = document.getElementById("scan-button");
     const saveButton = document.getElementById("save-button");
+    const deleteDevicesButton = document.getElementById("delete-devices-button");
     const portSelect = document.getElementById("port-select");
+    const selectAllCheckbox = document.getElementById("devices-select-all");
 
-    [scanButton, saveButton, portSelect].forEach((element) => {
+    [scanButton, saveButton, deleteDevicesButton, portSelect, selectAllCheckbox].forEach((element) => {
         if (element) {
             element.disabled = isBusy;
         }
+    });
+
+    document.querySelectorAll(".device-select-checkbox").forEach((element) => {
+        element.disabled = isBusy;
     });
 }
 
@@ -217,6 +291,38 @@ function renderBusOptions(buses, selectedBusId) {
 
 async function loadBuses() {
     return requestJson(buildAppUrl("/serial/bus"));
+}
+
+async function deleteSelectedDevices(activeBusId) {
+    const deviceIds = Array.from(selectedDeviceIds).map(Number);
+
+    if (!deviceIds.length) {
+        updateDeleteButtonVisibility();
+        return [];
+    }
+
+    setBusy(true);
+    setStatus("Удаляю выбранные устройства...");
+
+    try {
+        await requestJson(buildAppUrl("/serial/bus/devices"), {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ devices_id: deviceIds }),
+        });
+
+        selectedDeviceIds.clear();
+        const devices = await loadBusDevices(activeBusId);
+        updateDevicesTable(devices);
+        setStatus(`Удалено устройств: ${deviceIds.length}`, "success");
+        return devices;
+    } catch (error) {
+        console.error("Ошибка удаления устройств:", error);
+        setStatus(`Не удалось удалить устройства: ${error.message}`, "error");
+        return null;
+    } finally {
+        setBusy(false);
+    }
 }
 
 function renderSerialPageState(buses, activeBusId, devices) {
@@ -364,6 +470,31 @@ async function initSerialPage() {
 
     document.getElementById("save-button")?.addEventListener("click", async () => {
         buses = await saveBusSettings(buses);
+    });
+
+    document.getElementById("devices-select-all")?.addEventListener("change", (event) => {
+        const isChecked = event.target.checked;
+
+        document.querySelectorAll(".device-select-checkbox").forEach((checkbox) => {
+            checkbox.checked = isChecked;
+            if (isChecked) {
+                selectedDeviceIds.add(checkbox.value);
+            } else {
+                selectedDeviceIds.delete(checkbox.value);
+            }
+        });
+
+        refreshDeviceSelectionUi();
+    });
+
+    document.getElementById("delete-devices-button")?.addEventListener("click", async () => {
+        const activeBusId = portSelect.value;
+        if (!activeBusId) {
+            setStatus("Сначала выберите шину", "error");
+            return;
+        }
+
+        await deleteSelectedDevices(activeBusId);
     });
 }
 

@@ -46,6 +46,12 @@
         <h3 class="text-xl font-bold">Обнаруженные устройства</h3>
         <div class="flex items-center gap-3">
             <button
+                class="hidden px-4 py-2 rounded-lg border border-rose-200 dark:border-rose-900/60 text-sm font-bold text-rose-600 dark:text-rose-400 hover:border-rose-500 hover:text-rose-700 dark:hover:border-rose-500 dark:hover:text-rose-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                id="delete-devices-button"
+                type="button">
+                Удалить устройства
+            </button>
+            <button
                 class="px-4 py-2 rounded-lg border border-slate-200 dark:border-border-dark text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 id="save-button"
                 type="button">
@@ -68,6 +74,15 @@
             <thead>
                 <tr
                     class="bg-slate-50 dark:bg-border-dark/30 text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider">
+                    <th class="px-6 py-4 font-bold w-16">
+                        <label class="inline-flex items-center justify-center cursor-pointer">
+                            <input
+                                class="h-4 w-4 rounded border-slate-300 dark:border-border-dark text-primary focus:ring-primary dark:bg-background-dark"
+                                id="devices-select-all"
+                                type="checkbox"
+                                aria-label="Выбрать все устройства" />
+                        </label>
+                    </th>
                     <th class="px-6 py-4 font-bold">Модель</th>
                     <th class="px-6 py-4 font-bold">Адрес (ID)</th>
                     <th class="px-6 py-4 font-bold">Серийный номер</th>

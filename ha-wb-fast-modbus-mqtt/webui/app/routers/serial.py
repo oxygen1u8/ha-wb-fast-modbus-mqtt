@@ -7,7 +7,7 @@ from sqlalchemy import select, update, insert, delete
 from app.templates import templates, template_context
 from app.db_depends import get_async_db
 from app.schemas.bus import Bus as BusSchema, BusCreate
-from app.schemas.device import Device as DeviceSchema, DeviceCreate
+from app.schemas.device import Device as DeviceSchema, DeviceCreate, DeviceListDelete
 from app.models.bus import Bus as BusModel
 from app.models.device import Device as DeviceModel
 from app.fastmodbus.manager import WirenboardModbusManager, WirenboardModbusSlave
@@ -102,6 +102,15 @@ async def get_bus_devices(bus_id: int, db: AsyncSession = Depends(get_async_db))
     stmt = select(DeviceModel).where(DeviceModel.bus_id == bus_id)
     devices = await db.scalars(stmt)
     return devices.all()
+
+
+@router.delete("/bus/devices")
+async def get_bus_devices(
+    request: DeviceListDelete, db: AsyncSession = Depends(get_async_db)
+):
+    stmt = delete(DeviceModel).where(DeviceModel.id.in_(request.devices_id))
+    await db.execute(stmt)
+    await db.commit()
 
 
 @router.post(
