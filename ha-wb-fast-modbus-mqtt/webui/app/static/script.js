@@ -134,6 +134,7 @@ function updateDevicesTable(devices) {
         const model = device.model || "Неизвестно";
         const slaveAddress = Number(device.slave_address);
         const serialNum = Number(device.serial_num);
+        const deviceSettingsUrl = buildAppUrl(`/devices?device_id=${encodeURIComponent(device.id)}`);
 
         row.innerHTML = `
             <td class="px-6 py-4">
@@ -143,7 +144,16 @@ function updateDevicesTable(devices) {
             <td class="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">0x${serialNum.toString(16).toUpperCase().padStart(8, "0")}</td>
             <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">${device.baudrate || "Нет данных"}</td>
             <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">${device.parity || "Нет данных"}</td>
-            <td class="px-6 py-4 text-right text-sm text-slate-400">bus #${device.bus_id}</td>
+            <td class="px-6 py-4 text-right">
+                <a
+                    href="${deviceSettingsUrl}"
+                    class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:border-primary hover:text-primary dark:border-border-dark dark:bg-card-dark dark:text-slate-400 dark:hover:border-primary dark:hover:text-primary"
+                    title="Открыть настройки устройства"
+                    aria-label="Открыть настройки устройства"
+                >
+                    <span class="material-symbols-outlined text-lg">settings</span>
+                </a>
+            </td>
         `;
 
         tableBody.appendChild(row);
