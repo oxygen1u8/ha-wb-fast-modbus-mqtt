@@ -25,31 +25,7 @@
                     <span class="material-symbols-outlined">rule</span>
                     <span class="font-bold text-slate-900 dark:text-white">Биты четности</span>
                 </div>
-                <div class="flex flex-col gap-3">
-                    <label class="flex items-center gap-3 cursor-pointer group">
-                        <input checked=""
-                            class="w-5 h-5 rounded border-slate-300 dark:border-border-dark text-primary focus:ring-primary dark:bg-background-dark"
-                            type="checkbox" />
-                        <span
-                            class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Нет
-                            (None)</span>
-                    </label>
-                    <label class="flex items-center gap-3 cursor-pointer group">
-                        <input
-                            class="w-5 h-5 rounded border-slate-300 dark:border-border-dark text-primary focus:ring-primary dark:bg-background-dark"
-                            type="checkbox" />
-                        <span
-                            class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Чет
-                            (Even)</span>
-                    </label>
-                    <label class="flex items-center gap-3 cursor-pointer group">
-                        <input
-                            class="w-5 h-5 rounded border-slate-300 dark:border-border-dark text-primary focus:ring-primary dark:bg-background-dark"
-                            type="checkbox" />
-                        <span
-                            class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Нечет
-                            (Odd)</span>
-                    </label>
+                <div class="flex flex-col gap-3" id="parity-options">
                 </div>
             </div>
         </div>
@@ -61,105 +37,30 @@
                     <span class="font-bold text-slate-900 dark:text-white">Скорости сканирования
                         (бит/с)</span>
                 </div>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
-                    <label
-                        class="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-border-dark rounded-lg hover:border-primary/50 dark:hover:border-primary/50 cursor-pointer group transition-all bg-slate-50/50 dark:bg-background-dark/50">
-                        <input class="sr-only peer baudrate-checkbox" value="1200" type="checkbox" />
-                        <div
-                            class="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded flex items-center justify-center mb-3 peer-checked:bg-primary peer-checked:border-primary transition-colors">
-                            <span
-                                class="material-symbols-outlined text-white text-xs scale-0 peer-checked:scale-100 transition-transform">check</span>
-                        </div>
-                        <span
-                            class="text-sm font-mono font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">1200</span>
-                    </label>
-                    <label
-                        class="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-border-dark rounded-lg hover:border-primary/50 dark:hover:border-primary/50 cursor-pointer group transition-all bg-slate-50/50 dark:bg-background-dark/50">
-                        <input class="sr-only peer baudrate-checkbox" value="2400" type="checkbox" />
-                        <div
-                            class="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded flex items-center justify-center mb-3 peer-checked:bg-primary peer-checked:border-primary transition-colors">
-                            <span
-                                class="material-symbols-outlined text-white text-xs scale-0 peer-checked:scale-100 transition-transform">check</span>
-                        </div>
-                        <span
-                            class="text-sm font-mono font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">2400</span>
-                    </label>
-                    <label
-                        class="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-border-dark rounded-lg hover:border-primary/50 dark:hover:border-primary/50 cursor-pointer group transition-all bg-slate-50/50 dark:bg-background-dark/50">
-                        <input class="sr-only peer baudrate-checkbox" value="4800" type="checkbox" />
-                        <div
-                            class="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded flex items-center justify-center mb-3 peer-checked:bg-primary peer-checked:border-primary transition-colors">
-                            <span
-                                class="material-symbols-outlined text-white text-xs scale-0 peer-checked:scale-100 transition-transform">check</span>
-                        </div>
-                        <span
-                            class="text-sm font-mono font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">4800</span>
-                    </label>
-                    <label
-                        class="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-border-dark rounded-lg hover:border-primary/50 dark:hover:border-primary/50 cursor-pointer group transition-all bg-slate-50/50 dark:bg-background-dark/50">
-                        <input checked="" class="sr-only peer baudrate-checkbox" value="9600" type="checkbox" />
-                        <div
-                            class="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded flex items-center justify-center mb-3 peer-checked:bg-primary peer-checked:border-primary transition-colors">
-                            <span
-                                class="material-symbols-outlined text-white text-xs scale-0 peer-checked:scale-100 transition-transform">check</span>
-                        </div>
-                        <span
-                            class="text-sm font-mono font-bold text-slate-600 dark:text-slate-400 peer-checked:text-primary transition-colors">9600</span>
-                    </label>
-                    <label
-                        class="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-border-dark rounded-lg hover:border-primary/50 dark:hover:border-primary/50 cursor-pointer group transition-all bg-slate-50/50 dark:bg-background-dark/50">
-                        <input class="sr-only peer baudrate-checkbox" value="19200" type="checkbox" />
-                        <div
-                            class="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded flex items-center justify-center mb-3 peer-checked:bg-primary peer-checked:border-primary transition-colors">
-                            <span
-                                class="material-symbols-outlined text-white text-xs scale-0 peer-checked:scale-100 transition-transform">check</span>
-                        </div>
-                        <span
-                            class="text-sm font-mono font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">19200</span>
-                    </label>
-                    <label
-                        class="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-border-dark rounded-lg hover:border-primary/50 dark:hover:border-primary/50 cursor-pointer group transition-all bg-slate-50/50 dark:bg-background-dark/50">
-                        <input class="sr-only peer baudrate-checkbox" value="38400" type="checkbox" />
-                        <div
-                            class="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded flex items-center justify-center mb-3 peer-checked:bg-primary peer-checked:border-primary transition-colors">
-                            <span
-                                class="material-symbols-outlined text-white text-xs scale-0 peer-checked:scale-100 transition-transform">check</span>
-                        </div>
-                        <span
-                            class="text-sm font-mono font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">38400</span>
-                    </label>
-                    <label
-                        class="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-border-dark rounded-lg hover:border-primary/50 dark:hover:border-primary/50 cursor-pointer group transition-all bg-slate-50/50 dark:bg-background-dark/50">
-                        <input class="sr-only peer baudrate-checkbox" value="57600" type="checkbox" />
-                        <div
-                            class="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded flex items-center justify-center mb-3 peer-checked:bg-primary peer-checked:border-primary transition-colors">
-                            <span
-                                class="material-symbols-outlined text-white text-xs scale-0 peer-checked:scale-100 transition-transform">check</span>
-                        </div>
-                        <span
-                            class="text-sm font-mono font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">57600</span>
-                    </label>
-                    <label
-                        class="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-border-dark rounded-lg hover:border-primary/50 dark:hover:border-primary/50 cursor-pointer group transition-all bg-slate-50/50 dark:bg-background-dark/50">
-                        <input checked="" class="sr-only peer baudrate-checkbox" value="115200" type="checkbox" />
-                        <div
-                            class="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded flex items-center justify-center mb-3 peer-checked:bg-primary peer-checked:border-primary transition-colors">
-                            <span
-                                class="material-symbols-outlined text-white text-xs scale-0 peer-checked:scale-100 transition-transform">check</span>
-                        </div>
-                        <span
-                            class="text-sm font-mono font-bold text-slate-600 dark:text-slate-400 peer-checked:text-primary transition-colors">115200</span>
-                    </label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1" id="baudrate-options">
                 </div>
             </div>
         </div>
     </div>
-    <div class="flex items-center justify-between mb-4 px-1">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4 px-1">
         <h3 class="text-xl font-bold">Обнаруженные устройства</h3>
-        <button class="text-primary text-sm font-bold flex items-center gap-1">
-            <span class="material-symbols-outlined text-lg">sync</span>
-            Сканировать шину
-        </button>
+        <div class="flex items-center gap-3">
+            <button
+                class="px-4 py-2 rounded-lg border border-slate-200 dark:border-border-dark text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                id="save-button"
+                type="button">
+                Сохранить настройки
+            </button>
+            <button class="text-primary text-sm font-bold flex items-center gap-1 disabled:opacity-60 disabled:cursor-not-allowed"
+                id="scan-button"
+                type="button">
+                <span class="material-symbols-outlined text-lg">sync</span>
+                Сканировать шину
+            </button>
+        </div>
+    </div>
+    <div class="mb-4 px-1">
+        <p class="text-sm text-slate-500 dark:text-slate-400" id="serial-status">Ожидание загрузки конфигурации...</p>
     </div>
     <div
         class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-border-dark shadow-sm overflow-hidden mb-8">
@@ -178,5 +79,8 @@
             <tbody class="divide-y divide-slate-100 dark:divide-border-dark" id="devices-table-body">
             </tbody>
         </table>
+        <div class="hidden px-6 py-8 text-sm text-slate-500 dark:text-slate-400" id="devices-empty-state">
+            Для выбранной шины устройства пока не обнаружены.
+        </div>
     </div>
 </div>

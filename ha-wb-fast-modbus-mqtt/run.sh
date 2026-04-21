@@ -4,7 +4,16 @@ set -e
 
 source .venv/bin/activate
 
-echo "Start uvicorn"
 export PATH_TO_OPTIONS="/data/options.json"
+export DATABASE_URL="sqlite+aiosqlite:////data/modbus.db"
 cd webui
+
+DB_PATH="/data/modbus.db"
+if [ -f "${DB_PATH}" ]; then
+    bashio::log.info "Database found, applying Alembic migrations"
+else
+    bashio::log.info "Database not found, initializing schema with Alembic"
+fi
+alembic upgrade head
+
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8080

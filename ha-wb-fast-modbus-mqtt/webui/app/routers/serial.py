@@ -84,9 +84,8 @@ async def update_bus(
     bus_id: int, bus: BusCreate, db: AsyncSession = Depends(get_async_db)
 ):
     stmt = select(BusModel).where(BusModel.id == bus_id)
-    db_bus = await db.scalars(stmt)
-    db_bus = bus.first()
-    if bus is None:
+    db_bus = await db.scalar(stmt)
+    if db_bus is None:
         raise HTTPException(
             status_code=404, detail=f"Non-exist bus with bus_id={bus_id}"
         )
@@ -95,7 +94,7 @@ async def update_bus(
         update(BusModel).where(BusModel.id == bus_id).values(**update_data)
     )
     await db.commit()
-    return db_bus
+    return await db.scalar(stmt)
 
 
 @router.get("/bus/{bus_id}/devices", response_model=List[DeviceSchema])
