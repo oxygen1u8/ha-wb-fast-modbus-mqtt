@@ -29,6 +29,14 @@ const PARITY_OPTIONS = [
     { value: "E", label: "Чет (Even)" },
     { value: "O", label: "Нечет (Odd)" },
 ];
+const APP_BASE_PATH = (document.body?.dataset.basePath || "").replace(/\/$/, "");
+
+function buildAppUrl(path) {
+    if (!path.startsWith("/")) {
+        throw new Error(`Application path must start with '/': ${path}`);
+    }
+    return `${APP_BASE_PATH}${path}`;
+}
 
 function escapeHtml(value) {
     return String(value)
@@ -177,7 +185,7 @@ function setBusy(isBusy) {
 }
 
 async function loadBusDevices(busId) {
-    return requestJson(`/serial/bus/${busId}/devices`);
+    return requestJson(buildAppUrl(`/serial/bus/${busId}/devices`));
 }
 
 function renderBusOptions(buses, selectedBusId) {
@@ -198,7 +206,7 @@ function renderBusOptions(buses, selectedBusId) {
 }
 
 async function loadBuses() {
-    return requestJson("/serial/bus");
+    return requestJson(buildAppUrl("/serial/bus"));
 }
 
 function renderSerialPageState(buses, activeBusId, devices) {
@@ -247,7 +255,7 @@ async function saveBusSettings(buses) {
     setStatus("Сохраняю настройки шины...");
 
     try {
-        await requestJson(`/serial/bus/${selectedBus.id}`, {
+        await requestJson(buildAppUrl(`/serial/bus/${selectedBus.id}`), {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
@@ -280,7 +288,7 @@ async function scanSelectedBus() {
     setStatus("Идёт сканирование шины...");
 
     try {
-        const devices = await requestJson(`/serial/bus/${busId}/scan`, {
+        const devices = await requestJson(buildAppUrl(`/serial/bus/${busId}/scan`), {
             method: "POST",
         });
         updateDevicesTable(devices);

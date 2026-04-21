@@ -4,7 +4,7 @@ from typing import List
 from fastapi import APIRouter, Request, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, insert, delete
-from app.templates import templates
+from app.templates import templates, template_context
 from app.db_depends import get_async_db
 from app.schemas.bus import Bus as BusSchema, BusCreate
 from app.schemas.device import Device as DeviceSchema, DeviceCreate
@@ -16,16 +16,16 @@ from app.fastmodbus.manager import WirenboardModbusManager, WirenboardModbusSlav
 router = APIRouter(prefix="/serial", tags=["serial"])
 
 
+@router.get("")
 @router.get("/")
 async def root(request: Request):
     content = templates.TemplateResponse(
-        request=request, name="modules/serial.html", context={}
+        name="modules/serial.html", context=template_context(request)
     ).body.decode("utf-8")
 
     return templates.TemplateResponse(
-        request=request,
         name="index.html",
-        context={"content": content, "active_tab": "serial"},
+        context=template_context(request, content=content, active_tab="serial"),
     )
 
 

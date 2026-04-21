@@ -1,18 +1,18 @@
 from fastapi import APIRouter, Request
-from app.templates import templates
+from app.templates import templates, template_context
 
 
 router = APIRouter(prefix="/logs", tags=["logs"])
 
 
+@router.get("")
 @router.get("/")
 async def root(request: Request):
     content = templates.TemplateResponse(
-        request=request, name="modules/logs.html", context={}
+        name="modules/logs.html", context=template_context(request)
     ).body.decode("utf-8")
 
     return templates.TemplateResponse(
-        request=request,
         name="index.html",
-        context={"content": content, "active_tab": "logs"},
+        context=template_context(request, content=content, active_tab="logs"),
     )
