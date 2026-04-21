@@ -1,6 +1,6 @@
-name: "Wirenboard Fast Modbus to MQTT"
-description: "Hi, Mark!"
-version: "0.42"
+name: "Wirenboard Fast Modbus"
+description: "Web UI for Wirenboard Fast Modbus devices"
+version: 0.42.1
 slug: "ha-wb-fast-modbus-mqtt"
 init: false
 arch:
