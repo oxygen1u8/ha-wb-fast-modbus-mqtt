@@ -4,9 +4,7 @@ from pathlib import Path
 APP_DIR = Path(__file__).parent.resolve()
 STATIC_DIR = APP_DIR / "static"
 
-templates = Jinja2Templates(
-    directory=str(STATIC_DIR / "templates")
-)
+templates = Jinja2Templates(directory=str(STATIC_DIR / "templates"))
 
 
 def get_app_base_path(request):
