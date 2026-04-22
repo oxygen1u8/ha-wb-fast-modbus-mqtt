@@ -44,6 +44,7 @@ app.include_router(logs.router)
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse(
+        request=request,
         name="index.html",
         context=template_context(request, content="", active_tab="home"),
     )

@@ -2,10 +2,9 @@
 
 set -e
 
-source .venv/bin/activate
-
 export PATH_TO_OPTIONS="/data/options.json"
 export DATABASE_URL="sqlite+aiosqlite:////data/modbus.db"
+
 cd webui
 
 DB_PATH="/data/modbus.db"
@@ -14,6 +13,6 @@ if [ -f "${DB_PATH}" ]; then
 else
     bashio::log.info "Database not found, initializing schema with Alembic"
 fi
-alembic upgrade head
+poetry run alembic upgrade head
 
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8080

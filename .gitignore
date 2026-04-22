@@ -11,3 +11,4 @@ __main.py
 .ruff_cache/
 *.db
 docker_exec.sh
+*.lock

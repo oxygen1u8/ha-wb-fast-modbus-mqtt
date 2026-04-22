@@ -1,51 +1,35 @@
-[build-system]
-requires = ["setuptools>=69", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "ha-wb-fast-modbus-mqtt"
-version = "0.382"
-description = "Wirenboard Fast Modbus to MQTT"
+version = "0.42.2"
+description = "Web UI with Wirenboard Fast Modbus protocol support"
+authors = [
+    {name = "Egor Smolencev", email = "oxygen1u8@mail.ru"}
+]
+license = "MIT"
 readme = "README.md"
-requires-python = ">=3.10"
-authors = [{ name = "Egor Smolencev", email = "oxygen1u8@mail.ru" }]
-license = { file = "LICENSE" }
+requires-python = ">=3.12"
 dependencies = [
-    "annotated-doc==0.0.4",
-    "annotated-types==0.7.0",
-    "anyio==4.12.1",
-    "certifi==2026.1.4",
-    "click==8.3.1",
-    "exceptiongroup==1.3.1",
-    "fastapi==0.128.0",
-    "h11==0.16.0",
-    "httpcore==1.0.9",
-    "httpx==0.28.1",
-    "idna==3.11",
-    "Jinja2==3.1.6",
-    "MarkupSafe==3.0.3",
-    "packaging==26.0",
-    "pydantic==2.12.5",
-    "pydantic_core==2.41.5",
-    "pymodbus==3.11.4",
-    "pyserial==3.5",
-    "starlette==0.50.0",
-    "typing-inspection==0.4.2",
-    "typing_extensions==4.15.0",
-    "uvicorn==0.30.6",
+    "fastapi (>=0.136.0,<0.137.0)",
+    "uvicorn (>=0.45.0,<0.46.0)",
+    "jinja2 (>=3.1.6,<4.0.0)",
+    "sqlalchemy (>=2.0.49,<3.0.0)",
+    "aiosqlite (>=0.22.1,<0.23.0)",
+    "alembic (>=1.18.4,<2.0.0)",
+    "aiofiles (>=25.1.0,<26.0.0)",
+    "pydantic (>=2.13.3,<3.0.0)",
+    "pymodbus (>=3.13.0,<4.0.0)",
+    "pyserial (>=3.5,<4.0)",
+    "greenlet (>=3.4.0,<4.0.0)"
 ]
 
-[project.optional-dependencies]
-dev = [
-    "iniconfig==2.3.0",
-    "pluggy==1.6.0",
-    "Pygments==2.19.2",
-    "pytest==9.0.2",
-    "pytest-asyncio==1.3.0",
-    "ruff>=0.5.0",
-    "tomli==2.4.0",
-]
 
-[tool.setuptools]
-py-modules = ["main"]
-packages = ["fastmodbus", "webui", "fastmodbus.pdu", "fastmodbus.rtu", "webui.app"]
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+test = [
+    "pytest (>=9.0.3,<10.0.0)",
+    "pytest-asyncio (>=1.3.0,<2.0.0)",
+    "httpx (>=0.28.1,<0.29.0)"
+]
