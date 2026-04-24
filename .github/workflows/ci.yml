@@ -35,5 +35,4 @@ jobs:
     - name: Run tests
       run: |
         cd ha-wb-fast-modbus-mqtt/webui
-        echo $(pwd)
-        poetry run pytest
+        PYTHONPATH=. poetry run pytest app/tests
