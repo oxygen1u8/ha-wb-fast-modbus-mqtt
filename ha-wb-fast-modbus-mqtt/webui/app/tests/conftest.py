@@ -13,7 +13,9 @@ import os
 @pytest_asyncio.fixture(scope="function")
 async def get_async_db_test(tmp_path: Path):
     db_file = tmp_path / "test.db"
-    async_engine = create_async_engine(f"sqlite+aiosqlite:///{str(db_file)}", echo=False)
+    async_engine = create_async_engine(
+        f"sqlite+aiosqlite:///{str(db_file)}", echo=False
+    )
     async_session = async_sessionmaker(
         async_engine, expire_on_commit=False, class_=AsyncSession
     )
