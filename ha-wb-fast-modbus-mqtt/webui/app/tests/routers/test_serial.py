@@ -25,3 +25,23 @@ def test_get_bus_list(client: TestClient):
             id=2, name="/dev/ttyRS485-2", baudrate=[9600, 115200], parity=["N"]
         ).model_dump(),
     ]
+
+
+def test_get_bus_by_id(client: TestClient):
+    pass
+
+
+def test_update_bus(client: TestClient):
+    pass
+
+
+def test_get_bus_devices(client: TestClient):
+    pass
+
+
+def test_delete_bus_devices(client: TestClient):
+    pass
+
+
+def test_scan(client: TestClient):
+    pass
