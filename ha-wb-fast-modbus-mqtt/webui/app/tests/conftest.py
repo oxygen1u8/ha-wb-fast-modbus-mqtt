@@ -6,6 +6,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.db_depends import get_async_db
 from app.database import Base
+from app.models.bus import Bus as BusModel
+from app.models.device import Device as DeviceModel
 from app.main import app
 import os
 
@@ -28,6 +30,51 @@ async def get_async_db_test(tmp_path: Path):
 
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    async with async_session() as session:
+        bus_list = [
+            BusModel(name="/dev/ttyRS485-1", baudrate=[9600, 115200], parity=["N"]),
+            BusModel(name="/dev/ttyRS485-2", baudrate=[9600, 115200], parity=["N"]),
+        ]
+        session.add_all(bus_list)
+        await session.flush()
+        session.add_all(
+            [
+                DeviceModel(
+                    model="TEST-MODEL",
+                    slave_address=1,
+                    serial_num=1,
+                    baudrate=115200,
+                    bus_id=bus_list[0].id,
+                    parity="N",
+                ),
+                DeviceModel(
+                    model="TEST-MODEL",
+                    slave_address=2,
+                    serial_num=2,
+                    baudrate=9600,
+                    bus_id=bus_list[0].id,
+                    parity="N",
+                ),
+                DeviceModel(
+                    model="TEST-MODEL",
+                    slave_address=3,
+                    serial_num=3,
+                    baudrate=4800,
+                    bus_id=bus_list[1].id,
+                    parity="N",
+                ),
+                DeviceModel(
+                    model="TEST-MODEL",
+                    slave_address=4,
+                    serial_num=4,
+                    baudrate=1200,
+                    bus_id=bus_list[1].id,
+                    parity="N",
+                ),
+            ]
+        )
+        await session.commit()
 
     try:
         yield
