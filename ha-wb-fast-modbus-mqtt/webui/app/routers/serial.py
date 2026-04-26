@@ -108,7 +108,7 @@ async def get_bus_devices(bus_id: int, db: AsyncSession = Depends(get_async_db))
 
 
 @router.delete("/bus/devices")
-async def get_bus_devices(
+async def delete_bus_devices(
     request: DeviceListDelete, db: AsyncSession = Depends(get_async_db)
 ):
     stmt = delete(DeviceModel).where(DeviceModel.id.in_(request.devices_id))
