@@ -37,7 +37,6 @@ async def get_async_db_test(tmp_path: Path):
             BusModel(name="/dev/ttyRS485-2", baudrate=[9600, 115200], parity=["N"]),
         ]
         session.add_all(bus_list)
-        await session.flush()
         session.add_all(
             [
                 DeviceModel(
@@ -45,7 +44,7 @@ async def get_async_db_test(tmp_path: Path):
                     slave_address=1,
                     serial_num=1,
                     baudrate=115200,
-                    bus_id=bus_list[0].id,
+                    bus_id=1,
                     parity="N",
                 ),
                 DeviceModel(
@@ -53,7 +52,7 @@ async def get_async_db_test(tmp_path: Path):
                     slave_address=2,
                     serial_num=2,
                     baudrate=9600,
-                    bus_id=bus_list[0].id,
+                    bus_id=1,
                     parity="N",
                 ),
                 DeviceModel(
@@ -61,7 +60,7 @@ async def get_async_db_test(tmp_path: Path):
                     slave_address=3,
                     serial_num=3,
                     baudrate=4800,
-                    bus_id=bus_list[1].id,
+                    bus_id=2,
                     parity="N",
                 ),
                 DeviceModel(
@@ -69,7 +68,7 @@ async def get_async_db_test(tmp_path: Path):
                     slave_address=4,
                     serial_num=4,
                     baudrate=1200,
-                    bus_id=bus_list[1].id,
+                    bus_id=2,
                     parity="N",
                 ),
             ]

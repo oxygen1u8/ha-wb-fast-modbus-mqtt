@@ -72,7 +72,7 @@ async def get_bus_list(db: AsyncSession = Depends(get_async_db)):
 
 
 @router.get("/bus/{bus_id}", response_model=BusSchema)
-async def get_bus_by_id(bus_id: int, db: AsyncSession = Depends(get_async_db)):
+async def get_bus_by_id(bus_id: int, db: AsyncSession = Depends(get_async_db)): 
     stmt = select(BusModel).where(BusModel.id == bus_id)
     bus = await db.scalar(stmt)
     if bus is None:
