@@ -3,7 +3,7 @@ import logging
 from typing import List
 from fastapi import APIRouter, Request, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, insert, delete
+from sqlalchemy import select, update, insert, delete, bindparam
 from app.templates import templates, template_context
 from app.db_depends import get_async_db
 from app.schemas.bus import Bus as BusSchema, BusCreate
@@ -32,7 +32,7 @@ async def root(request: Request):
     )
 
 
-@router.get("/bus", response_model=List[BusSchema])
+@router.post("/sync", response_model=List[BusSchema])
 async def get_bus_list(db: AsyncSession = Depends(get_async_db)):
     import json
     import os
@@ -72,7 +72,7 @@ async def get_bus_list(db: AsyncSession = Depends(get_async_db)):
 
 
 @router.get("/bus/{bus_id}", response_model=BusSchema)
-async def get_bus_by_id(bus_id: int, db: AsyncSession = Depends(get_async_db)): 
+async def get_bus_by_id(bus_id: int, db: AsyncSession = Depends(get_async_db)):
     stmt = select(BusModel).where(BusModel.id == bus_id)
     bus = await db.scalar(stmt)
     if bus is None:
@@ -102,12 +102,84 @@ async def update_bus(
 
 @router.get("/bus/{bus_id}/devices", response_model=List[DeviceSchema])
 async def get_bus_devices(bus_id: int, db: AsyncSession = Depends(get_async_db)):
+    stmt = select(BusModel).where(BusModel.id == bus_id)
+    bus = await db.scalar(stmt)
+    if bus is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Bus with bus_id={bus_id} not exists")
     stmt = select(DeviceModel).where(DeviceModel.bus_id == bus_id)
     devices = await db.scalars(stmt)
     return devices.all()
 
 
-@router.delete("/bus/devices")
+@router.post(
+    "/devices",
+    response_model=List[DeviceSchema],
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_bus_devices(
+    devices: List[DeviceCreate], db: AsyncSession = Depends(get_async_db)
+):
+    stmt = select(DeviceModel).where(
+        DeviceModel.serial_num.in_([device.serial_num for device in devices]),
+    )
+    db_devices = await db.scalars(stmt)
+    if len(db_devices.all()):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Some of devices already exists within database",
+        )
+
+    db_devices = [DeviceModel(**device.model_dump()) for device in devices]
+    db.add_all(db_devices)
+    await db.commit()
+    return db_devices
+
+
+@router.put("/bus/{bus_id}/devices", response_model=List[DeviceSchema])
+async def update_bus_devices(
+    bus_id: int, devices: List[DeviceCreate], db: AsyncSession = Depends(get_async_db)
+):
+    stmt = select(DeviceModel).where(
+        DeviceModel.bus_id == bus_id,
+        DeviceModel.serial_num.in_([device.serial_num for device in devices]),
+    )
+    db_devices = (await db.scalars(stmt)).all()
+    if len(db_devices) != len(devices):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Some of devices wasn't found within database",
+        )
+    update_stmt = (
+        update(DeviceModel)
+        .where(
+            DeviceModel.bus_id == bindparam("bus_id_param"),
+            DeviceModel.serial_num == bindparam("serial_num_param"),
+        )
+        .values(
+            model=bindparam("model"),
+            baudrate=bindparam("baudrate"),
+            parity=bindparam("parity"),
+            slave_address=bindparam("slave_address"),
+        )
+    )
+
+    await db.execute(
+        update_stmt,
+        [
+            {
+                "bus_id_param": bus_id,
+                "serial_num_param": device.serial_num,
+                **device.model_dump(exclude={"bus_id", "serial_num"}),
+            }
+            for device in devices
+        ],
+    )
+    await db.commit()
+    updated_devices = await db.scalars(stmt)
+    return updated_devices.all()
+
+
+@router.delete("/devices")
 async def delete_bus_devices(
     request: DeviceListDelete, db: AsyncSession = Depends(get_async_db)
 ):
@@ -116,12 +188,8 @@ async def delete_bus_devices(
     await db.commit()
 
 
-@router.post(
-    "/bus/{bus_id}/scan",
-    response_model=List[DeviceSchema],
-    status_code=status.HTTP_201_CREATED,
-)
-async def scan(bus_id: int, db: AsyncSession = Depends(get_async_db)):
+@router.post("/bus/{bus_id}/scan", response_model=List[DeviceCreate])
+async def scan_bus_by_id(bus_id: int, db: AsyncSession = Depends(get_async_db)):
     stmt = select(BusModel).where(BusModel.id == bus_id)
     bus = await db.scalar(stmt)
 
@@ -140,25 +208,21 @@ async def scan(bus_id: int, db: AsyncSession = Depends(get_async_db)):
         slave_list = await manager.scan_bus()
     except Exception as e:
         logging.error(f"Scanning error: {e}")
-
-    stmt = delete(DeviceModel).where(DeviceModel.bus_id == bus_id)
-    await db.execute(stmt)
-    await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to scan bus with bus_id={bus_id}",
+        )
 
     device_list = [
-        DeviceModel(
-            **DeviceCreate(
-                model=slave.device_name,
-                baudrate=slave.baudrate,
-                parity=slave.parity,
-                slave_address=slave.slave_id,
-                serial_num=slave.serial_num,
-                bus_id=bus_id,
-            ).model_dump()
-        )
+        DeviceCreate(
+            model=slave.device_name,
+            baudrate=slave.baudrate,
+            parity=slave.parity,
+            slave_address=slave.slave_id,
+            serial_num=slave.serial_num,
+            bus_id=bus_id,
+        ).model_dump()
         for slave in slave_list
     ]
-    db.add_all(device_list)
-    await db.commit()
 
     return device_list
