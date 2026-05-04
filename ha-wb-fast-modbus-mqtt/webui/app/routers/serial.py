@@ -105,7 +105,10 @@ async def get_bus_devices(bus_id: int, db: AsyncSession = Depends(get_async_db))
     stmt = select(BusModel).where(BusModel.id == bus_id)
     bus = await db.scalar(stmt)
     if bus is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Bus with bus_id={bus_id} not exists")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Bus with bus_id={bus_id} not exists",
+        )
     stmt = select(DeviceModel).where(DeviceModel.bus_id == bus_id)
     devices = await db.scalars(stmt)
     return devices.all()
