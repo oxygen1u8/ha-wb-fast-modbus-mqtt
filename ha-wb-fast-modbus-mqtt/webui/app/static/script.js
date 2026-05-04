@@ -290,7 +290,9 @@ function renderBusOptions(buses, selectedBusId) {
 }
 
 async function loadBuses() {
-    return requestJson(buildAppUrl("/serial/bus"));
+    return requestJson(buildAppUrl("/serial/sync"), {
+        method: "POST",
+    });
 }
 
 async function deleteSelectedDevices(activeBusId) {
@@ -305,7 +307,7 @@ async function deleteSelectedDevices(activeBusId) {
     setStatus("Удаляю выбранные устройства...");
 
     try {
-        await requestJson(buildAppUrl("/serial/bus/devices"), {
+        await requestJson(buildAppUrl("/serial/devices"), {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ devices_id: deviceIds }),
@@ -323,6 +325,31 @@ async function deleteSelectedDevices(activeBusId) {
     } finally {
         setBusy(false);
     }
+}
+
+async function persistScannedDevices(busId, scannedDevices) {
+    const existingDevices = await loadBusDevices(busId);
+    const existingSerialNums = new Set(existingDevices.map((device) => String(device.serial_num)));
+    const devicesToCreate = scannedDevices.filter((device) => !existingSerialNums.has(String(device.serial_num)));
+    const devicesToUpdate = scannedDevices.filter((device) => existingSerialNums.has(String(device.serial_num)));
+
+    if (devicesToCreate.length) {
+        await requestJson(buildAppUrl("/serial/devices"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(devicesToCreate),
+        });
+    }
+
+    if (devicesToUpdate.length) {
+        await requestJson(buildAppUrl(`/serial/bus/${busId}/devices`), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(devicesToUpdate),
+        });
+    }
+
+    return loadBusDevices(busId);
 }
 
 function renderSerialPageState(buses, activeBusId, devices) {
@@ -404,11 +431,12 @@ async function scanSelectedBus() {
     setStatus("Идёт сканирование шины...");
 
     try {
-        const devices = await requestJson(buildAppUrl(`/serial/bus/${busId}/scan`), {
+        const scannedDevices = await requestJson(buildAppUrl(`/serial/bus/${busId}/scan`), {
             method: "POST",
         });
+        const devices = await persistScannedDevices(busId, scannedDevices);
         updateDevicesTable(devices);
-        setStatus(`Сканирование завершено. Найдено устройств: ${devices.length}`, "success");
+        setStatus(`Сканирование завершено. Найдено устройств: ${scannedDevices.length}`, "success");
     } catch (error) {
         console.error("Ошибка сканирования:", error);
         setStatus(`Не удалось просканировать шину: ${error.message}`, "error");
