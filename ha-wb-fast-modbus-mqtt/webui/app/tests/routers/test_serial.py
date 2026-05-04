@@ -64,7 +64,7 @@ def test_root(client: TestClient):
 
 
 def test_get_bus_list(client: TestClient):
-    response = client.get("/serial/bus")
+    response = client.post("/serial/sync")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == expect_bus_list
 
