@@ -122,7 +122,9 @@ def test_get_bus_devices(client: TestClient, id: int, expect: list[DeviceSchema]
 def test_create_bus_devices(client: TestClient, id: int, create_schema: DeviceCreate):
     response = client.post("/serial/devices", json=[create_schema.model_dump()])
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json() == [DeviceSchema(id=id, **create_schema.model_dump()).model_dump()]
+    assert response.json() == [
+        DeviceSchema(id=id, **create_schema.model_dump()).model_dump()
+    ]
 
 
 def test_update_bus_devices(client: TestClient):
