@@ -1,6 +1,6 @@
-name: "Wirenboard Fast Modbus to MQTT"
-description: "Hi, Mark!"
-version: "0.395"
+name: "Wirenboard Fast Modbus"
+description: "Web UI for Wirenboard Fast Modbus devices"
+version: 0.42.2
 slug: "ha-wb-fast-modbus-mqtt"
 init: false
 arch:
@@ -10,9 +10,10 @@ arch:
   - armv7
   - i386
 uart: true
-webui: http://[HOST]:[PORT:8000]
+webui: http://[HOST]:[PORT:8080]
 ingress: true
-ingress_port: 8000
+ingress_port: 8080
+panel_icon: mdi:serial-port
 options:
   Serial port config:
     - Port: ""

@@ -1,0 +1,101 @@
+<div>
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+            <h2 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Последовательный порт</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-1">Настройка последовательного соединения и скоростей опроса</p>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="lg:col-span-1 flex flex-col gap-6">
+            <div
+                class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-border-dark p-6 shadow-sm">
+                <div class="flex items-center gap-3 text-primary mb-4">
+                    <span class="material-symbols-outlined">usb</span>
+                    <span class="font-bold text-slate-900 dark:text-white">Последовательный порт</span>
+                </div>
+                <select
+                    id="port-select"
+                    class="w-full bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2.5 text-sm focus:ring-primary focus:border-primary transition-colors text-slate-700 dark:text-slate-200">
+                </select>
+                <p class="text-[10px] text-slate-500 mt-2 uppercase tracking-wider font-semibold">Системное устройство</p>
+            </div>
+            <div
+                class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-border-dark p-6 shadow-sm">
+                <div class="flex items-center gap-3 text-primary mb-4">
+                    <span class="material-symbols-outlined">rule</span>
+                    <span class="font-bold text-slate-900 dark:text-white">Биты четности</span>
+                </div>
+                <div class="flex flex-col gap-3" id="parity-options">
+                </div>
+            </div>
+        </div>
+        <div class="lg:col-span-2">
+            <div
+                class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-border-dark p-6 shadow-sm h-full flex flex-col">
+                <div class="flex items-center gap-3 text-primary mb-6">
+                    <span class="material-symbols-outlined">speed</span>
+                    <span class="font-bold text-slate-900 dark:text-white">Скорости сканирования
+                        (бит/с)</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1" id="baudrate-options">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4 px-1">
+        <h3 class="text-xl font-bold">Обнаруженные устройства</h3>
+        <div class="flex items-center gap-3">
+            <button
+                class="hidden px-4 py-2 rounded-lg border border-rose-200 dark:border-rose-900/60 text-sm font-bold text-rose-600 dark:text-rose-400 hover:border-rose-500 hover:text-rose-700 dark:hover:border-rose-500 dark:hover:text-rose-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                id="delete-devices-button"
+                type="button">
+                Удалить устройства
+            </button>
+            <button
+                class="px-4 py-2 rounded-lg border border-slate-200 dark:border-border-dark text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                id="save-button"
+                type="button">
+                Сохранить настройки
+            </button>
+            <button class="text-primary text-sm font-bold flex items-center gap-1 disabled:opacity-60 disabled:cursor-not-allowed"
+                id="scan-button"
+                type="button">
+                <span class="material-symbols-outlined text-lg">sync</span>
+                Сканировать шину
+            </button>
+        </div>
+    </div>
+    <div class="mb-4 px-1">
+        <p class="text-sm text-slate-500 dark:text-slate-400" id="serial-status">Ожидание загрузки конфигурации...</p>
+    </div>
+    <div
+        class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-border-dark shadow-sm overflow-hidden mb-8">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr
+                    class="bg-slate-50 dark:bg-border-dark/30 text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-wider">
+                    <th class="px-6 py-4 font-bold w-16">
+                        <label class="inline-flex items-center justify-center cursor-pointer">
+                            <input
+                                class="h-4 w-4 rounded border-slate-300 dark:border-border-dark text-primary focus:ring-primary dark:bg-background-dark"
+                                id="devices-select-all"
+                                type="checkbox"
+                                aria-label="Выбрать все устройства" />
+                        </label>
+                    </th>
+                    <th class="px-6 py-4 font-bold">Модель</th>
+                    <th class="px-6 py-4 font-bold">Адрес (ID)</th>
+                    <th class="px-6 py-4 font-bold">Серийный номер</th>
+                    <th class="px-6 py-4 font-bold">Скорость устройства</th>
+                    <th class="px-6 py-4 font-bold">Биты четности</th>
+                    <th class="px-6 py-4 font-bold text-right">Действия</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-border-dark" id="devices-table-body">
+            </tbody>
+        </table>
+        <div class="hidden px-6 py-8 text-sm text-slate-500 dark:text-slate-400" id="devices-empty-state">
+            Для выбранной шины устройства пока не обнаружены.
+        </div>
+    </div>
+</div>

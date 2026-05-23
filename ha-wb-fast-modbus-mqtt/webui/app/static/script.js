@@ -1,4 +1,5 @@
-tailwind.config = {
+window.tailwind = window.tailwind || {};
+window.tailwind.config = {
     darkMode: "class",
     theme: {
         extend: {
@@ -22,439 +23,509 @@ tailwind.config = {
     },
 };
 
-// Функция для получения списка портов
-async function loadSerialPorts() {
-    try {
-        const response = await fetch('./ports');
-        if (response.ok) {
-            const data = await response.json();
-            const portSelect = document.getElementById('port-select');
+const BAUDRATE_OPTIONS = [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200];
+const PARITY_OPTIONS = [
+    { value: "N", label: "Нет (None)" },
+    { value: "E", label: "Чет (Even)" },
+    { value: "O", label: "Нечет (Odd)" },
+];
+const APP_BASE_PATH = (document.body?.dataset.basePath || "").replace(/\/$/, "");
+const selectedDeviceIds = new Set();
 
-            if (portSelect) {
-                // Очищаем существующие опции
-                portSelect.innerHTML = '';
-
-                // Добавляем новые опции
-                data.port_list.forEach(port => {
-                    const option = document.createElement('option');
-                    option.value = port;
-                    option.textContent = port;
-                    portSelect.appendChild(option);
-                });
-            }
-        } else {
-            console.error('Ошибка получения списка портов:', response.status);
-        }
-    } catch (error) {
-        console.error('Ошибка сети при получении портов:', error);
+function buildAppUrl(path) {
+    if (!path.startsWith("/")) {
+        throw new Error(`Application path must start with '/': ${path}`);
     }
+    return `${APP_BASE_PATH}${path}`;
 }
 
-// Функция для обновления таблицы устройств
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+async function requestJson(url, options = {}) {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        let details = "";
+        try {
+            const errorData = await response.json();
+            details = errorData.detail ? `: ${errorData.detail}` : "";
+        } catch {
+            details = "";
+        }
+        throw new Error(`HTTP ${response.status}${details}`);
+    }
+    return response.json();
+}
+
+function getSelectedValues(selector) {
+    return Array.from(document.querySelectorAll(selector))
+        .filter((input) => input.checked)
+        .map((input) => input.value);
+}
+
+function renderBaudrateOptions(selectedValues = []) {
+    const container = document.getElementById("baudrate-options");
+    if (!container) {
+        return;
+    }
+
+    const selectedSet = new Set(selectedValues.map(String));
+    container.innerHTML = BAUDRATE_OPTIONS.map((baudrate) => `
+        <label class="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-border-dark rounded-lg hover:border-primary/50 dark:hover:border-primary/50 cursor-pointer group transition-all bg-slate-50/50 dark:bg-background-dark/50">
+            <input class="sr-only peer baudrate-checkbox" value="${baudrate}" type="checkbox" ${selectedSet.has(String(baudrate)) ? "checked" : ""} />
+            <div class="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded flex items-center justify-center mb-3 peer-checked:bg-primary peer-checked:border-primary transition-colors">
+                <span class="material-symbols-outlined text-white text-xs scale-0 peer-checked:scale-100 transition-transform">check</span>
+            </div>
+            <span class="text-sm font-mono font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">${baudrate}</span>
+        </label>
+    `).join("");
+}
+
+function renderParityOptions(selectedValues = []) {
+    const container = document.getElementById("parity-options");
+    if (!container) {
+        return;
+    }
+
+    const selectedSet = new Set(selectedValues);
+    container.innerHTML = PARITY_OPTIONS.map((parity) => `
+        <label class="flex items-center gap-3 cursor-pointer group">
+            <input
+                class="w-5 h-5 rounded border-slate-300 dark:border-border-dark text-primary focus:ring-primary dark:bg-background-dark parity-checkbox"
+                type="checkbox"
+                value="${parity.value}"
+                ${selectedSet.has(parity.value) ? "checked" : ""}
+            />
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">${parity.label}</span>
+        </label>
+    `).join("");
+}
+
+function updateDeleteButtonVisibility() {
+    const deleteButton = document.getElementById("delete-devices-button");
+    if (!deleteButton) {
+        return;
+    }
+
+    deleteButton.classList.toggle("hidden", selectedDeviceIds.size === 0);
+}
+
+function syncSelectAllCheckbox() {
+    const selectAllCheckbox = document.getElementById("devices-select-all");
+    const deviceCheckboxes = Array.from(document.querySelectorAll(".device-select-checkbox"));
+
+    if (!selectAllCheckbox) {
+        return;
+    }
+
+    if (!deviceCheckboxes.length) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+        return;
+    }
+
+    const checkedCount = deviceCheckboxes.filter((checkbox) => checkbox.checked).length;
+    selectAllCheckbox.checked = checkedCount === deviceCheckboxes.length;
+    selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < deviceCheckboxes.length;
+}
+
+function refreshDeviceSelectionUi() {
+    syncSelectAllCheckbox();
+    updateDeleteButtonVisibility();
+}
+
 function updateDevicesTable(devices) {
-    const tableBody = document.getElementById('devices-table-body');
-    if (!tableBody) return;
+    const tableBody = document.getElementById("devices-table-body");
+    const emptyState = document.getElementById("devices-empty-state");
+    const nextDeviceIds = new Set(devices.map((device) => String(device.id)));
 
-    tableBody.innerHTML = '';
+    Array.from(selectedDeviceIds).forEach((deviceId) => {
+        if (!nextDeviceIds.has(String(deviceId))) {
+            selectedDeviceIds.delete(deviceId);
+        }
+    });
 
-    devices.forEach(device => {
-        const row = document.createElement('tr');
-        row.className = 'hover:bg-slate-50 dark:hover:bg-border-dark/20 transition-colors';
+    if (!tableBody) {
+        return;
+    }
+
+    tableBody.innerHTML = "";
+
+    if (!devices.length) {
+        if (emptyState) {
+            emptyState.classList.remove("hidden");
+        }
+        refreshDeviceSelectionUi();
+        return;
+    }
+
+    if (emptyState) {
+        emptyState.classList.add("hidden");
+    }
+
+    devices.forEach((device) => {
+        const row = document.createElement("tr");
+        row.className = "hover:bg-slate-50 dark:hover:bg-border-dark/20 transition-colors";
+
+        const model = device.model || "Неизвестно";
+        const slaveAddress = Number(device.slave_address);
+        const serialNum = Number(device.serial_num);
+        const deviceId = String(device.id);
+        const deviceSettingsUrl = buildAppUrl(`/devices?device_id=${encodeURIComponent(device.id)}`);
 
         row.innerHTML = `
             <td class="px-6 py-4">
-                <div class="text-sm font-bold text-slate-900 dark:text-white">${device.slave_name || 'Неизвестно'}</div>
+                <label class="inline-flex items-center justify-center cursor-pointer">
+                    <input
+                        class="device-select-checkbox h-4 w-4 rounded border-slate-300 dark:border-border-dark text-primary focus:ring-primary dark:bg-background-dark"
+                        type="checkbox"
+                        value="${deviceId}"
+                        ${selectedDeviceIds.has(deviceId) ? "checked" : ""}
+                        aria-label="Выбрать устройство ${escapeHtml(model)}"
+                    />
+                </label>
             </td>
-            <td class="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">0x${device.slave_id.toString(16).toUpperCase()} (${device.slave_id})</td>
-            <td class="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">
-                0x${device.serial_num.toString(16).toUpperCase().padStart(8, '0')}
+            <td class="px-6 py-4">
+                <div class="text-sm font-bold text-slate-900 dark:text-white">${escapeHtml(model)}</div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">${device.baudrate || 'Нет данных'}</td>
-            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">${device.parity || 'Нет данных'}</td>
+            <td class="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">0x${slaveAddress.toString(16).toUpperCase()} (${slaveAddress})</td>
+            <td class="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">0x${serialNum.toString(16).toUpperCase().padStart(8, "0")}</td>
+            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">${device.baudrate || "Нет данных"}</td>
+            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">${device.parity || "Нет данных"}</td>
             <td class="px-6 py-4 text-right">
-                <button class="p-2 hover:bg-slate-200 dark:hover:bg-border-dark rounded transition-colors text-slate-400">
-                    <span class="material-symbols-outlined text-xl">tune</span>
-                </button>
+                <a
+                    href="${deviceSettingsUrl}"
+                    class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:border-primary hover:text-primary dark:border-border-dark dark:bg-card-dark dark:text-slate-400 dark:hover:border-primary dark:hover:text-primary"
+                    title="Открыть настройки устройства"
+                    aria-label="Открыть настройки устройства"
+                >
+                    <span class="material-symbols-outlined text-lg">settings</span>
+                </a>
             </td>
         `;
 
         tableBody.appendChild(row);
     });
-}
 
-// Настройка кнопки сканирования устройств
-function setupDeviceScanButton() {
-    // Находим кнопку сканирования по тексту
-    const scanButtons = document.querySelectorAll('button');
-    let scanButton = null;
-
-    scanButtons.forEach(button => {
-        if (button.textContent.includes('Сканировать')) {
-            scanButton = button;
-        }
-    });
-
-    if (scanButton) {
-        scanButton.addEventListener('click', async () => {
-            try {
-                // Добавляем анимацию к кнопке
-                const syncIcon = scanButton.querySelector('.material-symbols-outlined');
-                if (syncIcon) {
-                    syncIcon.classList.add('sync-animation');
-                }
-
-                // Получаем выбранный порт
-                const portSelect = document.getElementById('port-select');
-                const selectedPort = portSelect ? portSelect.value : "/dev/ttyUSB0";
-
-                // Собираем выбранные скорости
-                // Ищем все чекбоксы с атрибутом value (это чекбоксы скоростей)
-                const baudrateCheckboxes = document.querySelectorAll('input[type="checkbox"][value]');
-                const selectedBaudrates = [];
-                baudrateCheckboxes.forEach(cb => {
-                    // Проверяем, отмечен ли чекбокс (через свойство checked)
-                    if (cb.checked) {
-                        selectedBaudrates.push(parseInt(cb.value));
-                    }
-                });
-
-                // Собираем выбранные типы четности
-                const selectedParities = [];
-
-                // Находим чекбоксы четности по их тексту
-                const parityLabels = document.querySelectorAll('label.flex.items-center.gap-3.cursor-pointer.group');
-                parityLabels.forEach(label => {
-                    const span = label.querySelector('span');
-                    if (span) {
-                        const text = span.textContent;
-                        // Проверяем, отмечен ли чекбокс внутри этой метки
-                        const checkbox = label.querySelector('input[type="checkbox"]');
-                        if (checkbox && checkbox.checked) {
-                            if (text.includes('Нет')) {
-                                selectedParities.push('N');
-                            } else if (text.includes('Чет')) {
-                                selectedParities.push('E');
-                            } else if (text.includes('Нечет')) {
-                                selectedParities.push('O');
-                            }
-                        }
-                    }
-                });
-
-                // Отправляем POST запрос на /scan endpoint
-                const response = await fetch('./scan', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        "port": selectedPort,
-                        "baudrate": selectedBaudrates,
-                        "parity": selectedParities
-                    })
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('Scan result:', result);
-
-                    // Обновляем таблицу устройств
-                    if (result.slave_list) {
-                        updateDevicesTable(result.slave_list);
-                    }
-
-                    alert('Сканирование завершено');
-                } else {
-                    console.error('Ошибка сканирования:', response.status);
-                    alert('Ошибка при сканировании');
-                }
-            } catch (error) {
-                console.error('Ошибка сети:', error);
-                alert('Ошибка сети при сканировании');
-            } finally {
-                // Убираем анимацию после завершения запроса
-                const syncIcon = scanButton.querySelector('.material-symbols-outlined');
-                if (syncIcon) {
-                    syncIcon.classList.remove('sync-animation');
-                }
-            }
-        });
-    }
-}
-
-// Функция для отображения логов
-function displayLogs(logs) {
-    const logsContainer = document.getElementById('logs-container');
-    if (!logsContainer) return;
-
-    // Сохраняем текущую позицию прокрутки
-    const isScrolledToBottom = logsContainer.scrollHeight - logsContainer.clientHeight <= logsContainer.scrollTop + 1;
-
-    // Получаем существующие логи из localStorage
-    let existingLogs = [];
-    try {
-        const storedLogs = localStorage.getItem('storedLogs');
-        if (storedLogs) {
-            existingLogs = JSON.parse(storedLogs);
-        }
-    } catch (e) {
-        console.warn('Ошибка при чтении логов из localStorage:', e);
-    }
-
-    // Добавляем только новые логи
-    let newLogsAdded = 0;
-    logs.forEach(log => {
-        // Создаем уникальный ID для лога
-        const logId = `${log.timestamp}-${log.level}-${log.message}`;
-
-        // Проверяем, есть ли уже такой лог в контейнере по data-log-id
-        const existingLog = logsContainer.querySelector(`[data-log-id="${logId}"]`);
-        if (!existingLog) {
-            const logEntry = document.createElement('div');
-            logEntry.className = 'flex gap-4 log-entry';
-            logEntry.setAttribute('data-log-id', logId);
-
-            // Форматируем уровень лога
-            let levelClass = '';
-            let levelText = '';
-            switch (log.level) {
-                case 'INFO':
-                    levelClass = 'text-green-500';
-                    levelText = '[INFO]';
-                    break;
-                case 'WARNING':
-                    levelClass = 'text-yellow-500';
-                    levelText = '[WARN]';
-                    break;
-                case 'ERROR':
-                    levelClass = 'text-red-500';
-                    levelText = '[ERROR]';
-                    break;
-                case 'DEBUG':
-                    levelClass = 'text-slate-500';
-                    levelText = '[DEBUG]';
-                    break;
-                default:
-                    levelClass = 'text-slate-500';
-                    levelText = `[${log.level}]`;
-            }
-
-            logEntry.innerHTML = `
-                <span class="text-slate-500 shrink-0">${log.timestamp}</span>
-                <span class="${levelClass} font-bold shrink-0">${levelText}</span>
-                <span class="text-slate-300">${log.message}</span>
-            `;
-
-            logsContainer.appendChild(logEntry);
-            newLogsAdded++;
-
-            // Добавляем лог в массив существующих логов
-            existingLogs.push(log);
-        }
-    });
-
-    // Ограничиваем количество логов в localStorage (например, последние 1000 записей)
-    if (existingLogs.length > 1000) {
-        existingLogs = existingLogs.slice(-1000);
-    }
-
-    // Сохраняем обновленные логи в localStorage
-    try {
-        localStorage.setItem('storedLogs', JSON.stringify(existingLogs));
-    } catch (e) {
-        console.warn('Ошибка при сохранении логов в localStorage:', e);
-    }
-
-    // Автопрокрутка если включена и если мы были внизу
-    const autoScrollCheckbox = document.getElementById('auto-scroll-checkbox');
-    if (autoScrollCheckbox && autoScrollCheckbox.checked && isScrolledToBottom) {
-        logsContainer.scrollTop = logsContainer.scrollHeight;
-    }
-}
-
-// Функция для загрузки логов
-async function loadLogs() {
-    try {
-        const response = await fetch('./logs/output');
-        if (response.ok) {
-            const data = await response.json();
-            displayLogs(data.logs);
-        } else {
-            console.error('Ошибка получения логов:', response.status);
-        }
-    } catch (error) {
-        console.error('Ошибка сети при получении логов:', error);
-    }
-}
-
-// Функция для восстановления логов из localStorage при загрузке вкладки "Логи"
-function restoreLogsFromStorage() {
-    try {
-        const storedLogs = localStorage.getItem('storedLogs');
-        if (storedLogs) {
-            const logsContainer = document.getElementById('logs-container');
-            if (logsContainer) {
-                // Очищаем контейнер перед восстановлением
-                logsContainer.innerHTML = '';
-
-                const logs = JSON.parse(storedLogs);
-                logs.forEach(log => {
-                    // Создаем уникальный ID для лога
-                    const logId = `${log.timestamp}-${log.level}-${log.message}`;
-
-                    const logEntry = document.createElement('div');
-                    logEntry.className = 'flex gap-4 log-entry';
-                    logEntry.setAttribute('data-log-id', logId);
-
-                    // Форматируем уровень лога
-                    let levelClass = '';
-                    let levelText = '';
-                    switch (log.level) {
-                        case 'INFO':
-                            levelClass = 'text-green-500';
-                            levelText = '[INFO]';
-                            break;
-                        case 'WARNING':
-                            levelClass = 'text-yellow-500';
-                            levelText = '[WARN]';
-                            break;
-                        case 'ERROR':
-                            levelClass = 'text-red-500';
-                            levelText = '[ERROR]';
-                            break;
-                        case 'DEBUG':
-                            levelClass = 'text-slate-500';
-                            levelText = '[DEBUG]';
-                            break;
-                        default:
-                            levelClass = 'text-slate-500';
-                            levelText = `[${log.level}]`;
-                    }
-
-                    logEntry.innerHTML = `
-                        <span class="text-slate-500 shrink-0">${log.timestamp}</span>
-                        <span class="${levelClass} font-bold shrink-0">${levelText}</span>
-                        <span class="text-slate-300">${log.message}</span>
-                    `;
-
-                    logsContainer.appendChild(logEntry);
-                });
-            }
-        }
-    } catch (e) {
-        console.warn('Ошибка при восстановлении логов из localStorage:', e);
-    }
-}
-
-// Функция для обновления логов с интервалом
-let logsInterval = null;
-
-// Запуск обновления логов сразу при загрузке страницы
-document.addEventListener('DOMContentLoaded', function () {
-    loadSerialPorts();
-    setupDeviceScanButton();
-    startLogsUpdate();
-});
-
-function startLogsUpdate() {
-    // Восстанавливаем логи из localStorage при старте
-    restoreLogsFromStorage();
-
-    // Загружаем логи сразу
-    loadLogs();
-
-    // Запускаем обновление каждые 2 секунды
-    logsInterval = setInterval(loadLogs, 2000);
-}
-
-// Хранение ID последнего показанного лога для предотвращения дублирования
-let lastDisplayedLogId = 0;
-
-function startLogsUpdate() {
-    // Загружаем логи сразу
-    loadLogs();
-
-    // Запускаем обновление каждые 2 секунды
-    logsInterval = setInterval(loadLogs, 2000);
-}
-
-function stopLogsUpdate() {
-    if (logsInterval) {
-        clearInterval(logsInterval);
-        logsInterval = null;
-    }
-}
-
-// Обработка событий для вкладки логов
-document.addEventListener('DOMContentLoaded', function () {
-    // Обработка чекбокса автопрокрутки
-    const autoScrollCheckbox = document.getElementById('auto-scroll-checkbox');
-    if (autoScrollCheckbox) {
-        autoScrollCheckbox.addEventListener('change', function() {
-            if (this.checked) {
-                const logsContainer = document.getElementById('logs-container');
-                if (logsContainer) {
-                    logsContainer.scrollTop = logsContainer.scrollHeight;
-                }
-            }
-        });
-    }
-
-    // Обработка кнопки паузы
-    const pauseButton = document.getElementById('pause-button');
-    if (pauseButton) {
-        pauseButton.addEventListener('click', function() {
-            if (logsInterval) {
-                stopLogsUpdate();
-                this.innerHTML = '<span class="material-symbols-outlined text-lg">play_arrow</span> Воспроизвести';
+    tableBody.querySelectorAll(".device-select-checkbox").forEach((checkbox) => {
+        checkbox.addEventListener("change", (event) => {
+            const { checked, value } = event.target;
+            if (checked) {
+                selectedDeviceIds.add(value);
             } else {
-                startLogsUpdate();
-                this.innerHTML = '<span class="material-symbols-outlined text-lg">pause</span> Пауза';
+                selectedDeviceIds.delete(value);
             }
-        });
-    }
-
-    // Обработка кнопки очистки логов
-    const clearButton = document.getElementById('clear-button');
-    if (clearButton) {
-        clearButton.addEventListener('click', async function() {
-            if (confirm('Вы уверены, что хотите очистить логи?')) {
-                // Здесь можно было бы отправить запрос на очистку логов, если бы был такой эндпоинт
-                // Для сейчас просто очищаем отображение
-                const logsContainer = document.getElementById('logs-container');
-                if (logsContainer) {
-                    logsContainer.innerHTML = '';
-                }
-                // Также очищаем localStorage
-                try {
-                    localStorage.removeItem('storedLogs');
-                } catch (e) {
-                    console.warn('Ошибка при очистке логов в localStorage:', e);
-                }
-            }
-        });
-    }
-
-    // Обработка кнопки скачивания логов
-    const downloadButton = document.getElementById('download-button');
-    if (downloadButton) {
-        downloadButton.addEventListener('click', function() {
-            // Для скачивания логов можно реализовать отдельный эндпоинт или использовать текущие логи
-            alert('Функция скачивания логов пока не реализована');
-        });
-    }
-
-    // Обработка переключения вкладок
-    const tabLinks = document.querySelectorAll('.tab-link');
-    tabLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            // При переходе на вкладку "Логи" восстанавливаем сохраненные логи
-            if (this.getAttribute('href') === '/logs') {
-                // Добавляем небольшую задержку для обеспечения корректной отрисовки
-                setTimeout(() => {
-                    restoreLogsFromStorage();
-                }, 100);
-            }
+            refreshDeviceSelectionUi();
         });
     });
+
+    refreshDeviceSelectionUi();
+}
+
+function setStatus(message, tone = "muted") {
+    const node = document.getElementById("serial-status");
+    if (!node) {
+        return;
+    }
+
+    node.textContent = message;
+    node.className = "text-sm";
+
+    if (tone === "error") {
+        node.classList.add("text-rose-500");
+        return;
+    }
+
+    if (tone === "success") {
+        node.classList.add("text-emerald-500");
+        return;
+    }
+
+    node.classList.add("text-slate-500", "dark:text-slate-400");
+}
+
+function setBusy(isBusy) {
+    const scanButton = document.getElementById("scan-button");
+    const saveButton = document.getElementById("save-button");
+    const deleteDevicesButton = document.getElementById("delete-devices-button");
+    const portSelect = document.getElementById("port-select");
+    const selectAllCheckbox = document.getElementById("devices-select-all");
+
+    [scanButton, saveButton, deleteDevicesButton, portSelect, selectAllCheckbox].forEach((element) => {
+        if (element) {
+            element.disabled = isBusy;
+        }
+    });
+
+    document.querySelectorAll(".device-select-checkbox").forEach((element) => {
+        element.disabled = isBusy;
+    });
+}
+
+async function loadBusDevices(busId) {
+    return requestJson(buildAppUrl(`/serial/bus/${busId}/devices`));
+}
+
+function renderBusOptions(buses, selectedBusId) {
+    const portSelect = document.getElementById("port-select");
+    if (!portSelect) {
+        return;
+    }
+
+    portSelect.innerHTML = "";
+
+    buses.forEach((bus) => {
+        const option = document.createElement("option");
+        option.value = bus.id;
+        option.textContent = bus.name;
+        option.selected = String(bus.id) === String(selectedBusId);
+        portSelect.appendChild(option);
+    });
+}
+
+async function loadBuses() {
+    return requestJson(buildAppUrl("/serial/sync"), {
+        method: "POST",
+    });
+}
+
+async function deleteSelectedDevices(activeBusId) {
+    const deviceIds = Array.from(selectedDeviceIds).map(Number);
+
+    if (!deviceIds.length) {
+        updateDeleteButtonVisibility();
+        return [];
+    }
+
+    setBusy(true);
+    setStatus("Удаляю выбранные устройства...");
+
+    try {
+        await requestJson(buildAppUrl("/serial/devices"), {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ devices_id: deviceIds }),
+        });
+
+        selectedDeviceIds.clear();
+        const devices = await loadBusDevices(activeBusId);
+        updateDevicesTable(devices);
+        setStatus(`Удалено устройств: ${deviceIds.length}`, "success");
+        return devices;
+    } catch (error) {
+        console.error("Ошибка удаления устройств:", error);
+        setStatus(`Не удалось удалить устройства: ${error.message}`, "error");
+        return null;
+    } finally {
+        setBusy(false);
+    }
+}
+
+async function persistScannedDevices(busId, scannedDevices) {
+    const existingDevices = await loadBusDevices(busId);
+    const existingSerialNums = new Set(existingDevices.map((device) => String(device.serial_num)));
+    const devicesToCreate = scannedDevices.filter((device) => !existingSerialNums.has(String(device.serial_num)));
+    const devicesToUpdate = scannedDevices.filter((device) => existingSerialNums.has(String(device.serial_num)));
+
+    if (devicesToCreate.length) {
+        await requestJson(buildAppUrl("/serial/devices"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(devicesToCreate),
+        });
+    }
+
+    if (devicesToUpdate.length) {
+        await requestJson(buildAppUrl(`/serial/bus/${busId}/devices`), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(devicesToUpdate),
+        });
+    }
+
+    return loadBusDevices(busId);
+}
+
+function renderSerialPageState(buses, activeBusId, devices) {
+    const activeBus = buses.find((bus) => String(bus.id) === String(activeBusId));
+    if (!activeBus) {
+        updateDevicesTable([]);
+        setStatus("Шина не найдена", "error");
+        return;
+    }
+
+    renderBusOptions(buses, activeBus.id);
+    renderBaudrateOptions(activeBus.baudrate || []);
+    renderParityOptions(activeBus.parity || []);
+    updateDevicesTable(devices);
+}
+
+async function syncBusState(busId, buses) {
+    const activeBus = buses.find((bus) => String(bus.id) === String(busId));
+    if (!activeBus) {
+        updateDevicesTable([]);
+        setStatus("Шина не найдена", "error");
+        return;
+    }
+
+    const devices = await loadBusDevices(activeBus.id);
+    renderSerialPageState(buses, activeBus.id, devices);
+    setStatus(`Загружена шина ${activeBus.name}`);
+}
+
+async function saveBusSettings(buses) {
+    const portSelect = document.getElementById("port-select");
+    const selectedBus = buses.find((bus) => String(bus.id) === portSelect?.value);
+
+    if (!selectedBus) {
+        setStatus("Сначала выберите шину", "error");
+        return buses;
+    }
+
+    const payload = {
+        name: selectedBus.name,
+        baudrate: getSelectedValues(".baudrate-checkbox").map(Number),
+        parity: getSelectedValues(".parity-checkbox"),
+    };
+
+    setBusy(true);
+    setStatus("Сохраняю настройки шины...");
+
+    try {
+        await requestJson(buildAppUrl(`/serial/bus/${selectedBus.id}`), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+
+        const nextBuses = await loadBuses();
+        document.getElementById("port-select").value = String(selectedBus.id);
+        await syncBusState(selectedBus.id, nextBuses);
+        setStatus("Настройки шины сохранены", "success");
+        return nextBuses;
+    } catch (error) {
+        console.error("Ошибка сохранения шины:", error);
+        setStatus(`Не удалось сохранить настройки: ${error.message}`, "error");
+        return buses;
+    } finally {
+        setBusy(false);
+    }
+}
+
+async function scanSelectedBus() {
+    const portSelect = document.getElementById("port-select");
+    const busId = portSelect?.value;
+
+    if (!busId) {
+        setStatus("Сначала выберите шину", "error");
+        return;
+    }
+
+    setBusy(true);
+    setStatus("Идёт сканирование шины...");
+
+    try {
+        const scannedDevices = await requestJson(buildAppUrl(`/serial/bus/${busId}/scan`), {
+            method: "POST",
+        });
+        const devices = await persistScannedDevices(busId, scannedDevices);
+        updateDevicesTable(devices);
+        setStatus(`Сканирование завершено. Найдено устройств: ${scannedDevices.length}`, "success");
+    } catch (error) {
+        console.error("Ошибка сканирования:", error);
+        setStatus(`Не удалось просканировать шину: ${error.message}`, "error");
+    } finally {
+        setBusy(false);
+    }
+}
+
+async function initSerialPage() {
+    const portSelect = document.getElementById("port-select");
+    if (!portSelect) {
+        return;
+    }
+
+    setBusy(true);
+    setStatus("Загружаю конфигурацию шин...");
+
+    let buses = [];
+
+    try {
+        buses = await loadBuses();
+
+        if (!buses.length) {
+            updateDevicesTable([]);
+            renderBaudrateOptions([]);
+            renderParityOptions([]);
+            setStatus("Шины не найдены", "error");
+            return;
+        }
+
+        const initialBus = buses[0];
+        const devices = await loadBusDevices(initialBus.id);
+        renderSerialPageState(buses, initialBus.id, devices);
+        setStatus(`Загружена шина ${initialBus.name}`);
+    } catch (error) {
+        console.error("Ошибка инициализации serial-страницы:", error);
+        setStatus(`Не удалось загрузить шины: ${error.message}`, "error");
+        return;
+    } finally {
+        setBusy(false);
+    }
+
+    portSelect.addEventListener("change", async (event) => {
+        setBusy(true);
+        setStatus("Переключаю активную шину...");
+        try {
+            await syncBusState(event.target.value, buses);
+        } catch (error) {
+            console.error("Ошибка переключения шины:", error);
+            setStatus(`Не удалось загрузить устройства: ${error.message}`, "error");
+        } finally {
+            setBusy(false);
+        }
+    });
+
+    document.getElementById("scan-button")?.addEventListener("click", () => {
+        scanSelectedBus();
+    });
+
+    document.getElementById("save-button")?.addEventListener("click", async () => {
+        buses = await saveBusSettings(buses);
+    });
+
+    document.getElementById("devices-select-all")?.addEventListener("change", (event) => {
+        const isChecked = event.target.checked;
+
+        document.querySelectorAll(".device-select-checkbox").forEach((checkbox) => {
+            checkbox.checked = isChecked;
+            if (isChecked) {
+                selectedDeviceIds.add(checkbox.value);
+            } else {
+                selectedDeviceIds.delete(checkbox.value);
+            }
+        });
+
+        refreshDeviceSelectionUi();
+    });
+
+    document.getElementById("delete-devices-button")?.addEventListener("click", async () => {
+        const activeBusId = portSelect.value;
+        if (!activeBusId) {
+            setStatus("Сначала выберите шину", "error");
+            return;
+        }
+
+        await deleteSelectedDevices(activeBusId);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    initSerialPage();
 });

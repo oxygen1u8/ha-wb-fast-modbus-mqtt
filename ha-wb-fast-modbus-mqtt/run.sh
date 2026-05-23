@@ -2,7 +2,17 @@
 
 set -e
 
-source .venv/bin/activate
+export PATH_TO_OPTIONS="/data/options.json"
+export DATABASE_URL="sqlite+aiosqlite:////data/modbus.db"
 
-echo "Start main.py"
-python3 main.py --options /data/options.json
+cd webui
+
+DB_PATH="/data/modbus.db"
+if [ -f "${DB_PATH}" ]; then
+    bashio::log.info "Database found, applying Alembic migrations"
+else
+    bashio::log.info "Database not found, initializing schema with Alembic"
+fi
+poetry run alembic upgrade head
+
+poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8080

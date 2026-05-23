@@ -28,8 +28,11 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install -r ha-wb-fast-modbus-mqtt/requirements.txt
+        pip install poetry
+        cd ha-wb-fast-modbus-mqtt
+        poetry install --with test --no-root
 
     - name: Run tests
       run: |
-        pytest -q
+        cd ha-wb-fast-modbus-mqtt/webui
+        PYTHONPATH=. poetry run pytest app/tests
