@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from httpx import Response
 from app.models.bus import Bus as BusModel
 from app.schemas.bus import Bus as BusSchema
-from app.schemas.device import Device as DeviceSchema
+from app.schemas.device import Device as DeviceSchema, DeviceCreate
 
 
 expect_bus_list = [
@@ -63,7 +63,7 @@ def test_root(client: TestClient):
     assert "<html" in response.text.lower()
 
 
-def test_get_bus_list(client: TestClient):
+def test_create_bus_list(client: TestClient):
     response = client.post("/serial/sync")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == expect_bus_list
@@ -103,9 +103,35 @@ def test_get_bus_devices(client: TestClient, id: int, expect: list[DeviceSchema]
     assert response.json() == expect
 
 
+@pytest.mark.parametrize(
+    "id, create_schema",
+    [
+        (
+            5,
+            DeviceCreate(
+                model="TEST-MODEL",
+                slave_address=5,
+                serial_num=5,
+                baudrate=9600,
+                bus_id=1,
+                parity="N",
+            ),
+        )
+    ],
+)
+def test_create_bus_devices(client: TestClient, id: int, create_schema: DeviceCreate):
+    response = client.post("/serial/devices", json=[create_schema.model_dump()])
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json() == [DeviceSchema(id=id, **create_schema.model_dump()).model_dump()]
+
+
+def test_update_bus_devices(client: TestClient):
+    pass
+
+
 def test_delete_bus_devices(client: TestClient):
     pass
 
 
-def test_scan(client: TestClient):
+def test_scan_bus_by_id(client: TestClient):
     pass

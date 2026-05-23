@@ -33,7 +33,7 @@ async def root(request: Request):
 
 
 @router.post("/sync", response_model=List[BusSchema])
-async def get_bus_list(db: AsyncSession = Depends(get_async_db)):
+async def create_bus_list(db: AsyncSession = Depends(get_async_db)):
     import json
     import os
 
