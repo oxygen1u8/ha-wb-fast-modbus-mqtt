@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
                         device_type=device_type,
                         title=template_config.get("title"),
                         filename=template_path.name,
-                        config=config
+                        config=config,
                     )
                     statement = statement.on_conflict_do_update(
                         index_elements=[Template.device_type],
