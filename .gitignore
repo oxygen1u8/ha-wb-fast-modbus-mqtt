@@ -12,3 +12,5 @@ __main.py
 *.db
 docker_exec.sh
 *.lock
+tmp.json
+ha-wb-fast-modbus-mqtt/options/templates/

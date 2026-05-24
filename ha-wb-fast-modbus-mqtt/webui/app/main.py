@@ -4,6 +4,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from pathlib import Path
 import logging
 
+from app.lifespan import lifespan
 from app.templates import templates, template_context
 from app.routers import serial, devices, logs
 
@@ -14,6 +15,7 @@ logging.basicConfig(level=logging.INFO)
 app = FastAPI(
     title="Wirenboard Modbus manager",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 
