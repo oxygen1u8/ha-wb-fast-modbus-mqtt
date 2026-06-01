@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from pathlib import Path
 from app.database import async_session_maker
-from app.models.templates import Template
+from app.models.template import Template
 import json
 import os
 
@@ -45,6 +45,6 @@ async def lifespan(app: FastAPI):
                             },
                         )
 
-                    await session.execute(statement)
-                await session.commit()
+                        await session.execute(statement)
+                    await session.commit()
     yield

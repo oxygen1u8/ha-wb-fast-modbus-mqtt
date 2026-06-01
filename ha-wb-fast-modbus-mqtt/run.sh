@@ -4,11 +4,11 @@ set -e
 
 export PATH_TO_OPTIONS="/data/options.json"
 export PATH_TO_TEMPLATES="/ha-wb-fast-modbus-mqtt/templates"
-export DATABASE_URL="sqlite+aiosqlite:////data/modbus.db"
+export DB_PATH="/data/modbus.db"
+export DATABASE_URL="sqlite+aiosqlite:///$DB_PATH"
 
 cd webui
 
-DB_PATH="/data/modbus.db"
 if [ -f "${DB_PATH}" ]; then
     bashio::log.info "Database found, applying Alembic migrations"
 else
