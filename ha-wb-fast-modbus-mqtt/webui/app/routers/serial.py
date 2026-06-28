@@ -38,8 +38,8 @@ async def create_bus_list(db: AsyncSession = Depends(get_async_db)):
     import os
 
     ports = []
+    path_to_options = os.environ.get("PATH_TO_OPTIONS")
     try:
-        path_to_options = os.environ.get("PATH_TO_OPTIONS")
         async with aiofiles.open(path_to_options, "r", encoding="utf-8") as file:
             content = await file.read()
             data = json.loads(content)
