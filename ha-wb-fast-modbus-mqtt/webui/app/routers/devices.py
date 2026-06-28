@@ -1,13 +1,14 @@
 from sqlalchemy import select, update, insert, delete, bindparam
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends, HTTPException, Body
 from app.templates import templates, template_context
 from app.models.template import Template as TemplateModel
 from app.models.device import Device as DeviceModel
 from app.schemas.json import JSONContent
 from app.schemas.device import Device as DeviceSchema
 from app.db_depends import get_async_db
-from typing import List
+from typing import List, Any, Dict
+import json
 import logging
 
 
@@ -48,9 +49,11 @@ async def get_device_config(device_id: int, db: AsyncSession = Depends(get_async
     return device.config
 
 
-@router.put("/{device_id}/config", response_model=DeviceSchema)
+@router.patch("/{device_id}/config", response_model=DeviceSchema)
 async def update_device_config(
-    device_id: int, config: JSONContent, db: AsyncSession = Depends(get_async_db)
+    device_id: int,
+    data: Dict[str, Any] = Body(..., description="JSON конфигурация"),
+    db: AsyncSession = Depends(get_async_db),
 ):
     stmt = select(DeviceModel).where(DeviceModel.id == device_id)
     device = await db.scalar(stmt)
@@ -58,7 +61,8 @@ async def update_device_config(
         raise HTTPException(
             status_code=404, detail=f"Non-exist device with device_id={device_id}"
         )
-    device.config = config.content
+
+    device.config = json.dumps(data)
     await db.commit()
     await db.refresh(device)
     return device
