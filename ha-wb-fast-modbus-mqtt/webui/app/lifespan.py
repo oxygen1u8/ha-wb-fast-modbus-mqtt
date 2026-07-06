@@ -9,8 +9,7 @@ import json
 import os
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
+async def load_templates():
     path_to_templates = os.environ.get("PATH_TO_TEMPLATES")
     if path_to_templates:
         templates_dir = Path(path_to_templates)
@@ -47,4 +46,9 @@ async def lifespan(app: FastAPI):
 
                         await session.execute(statement)
                     await session.commit()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await load_templates()
     yield

@@ -1,18 +1,19 @@
-from sqlalchemy import select, update, insert, delete, bindparam
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Request, Depends, HTTPException, Body
 from app.templates import templates, template_context
 from app.models.template import Template as TemplateModel
 from app.models.device import Device as DeviceModel
-from app.schemas.json import JSONContent
 from app.schemas.device import Device as DeviceSchema
 from app.db_depends import get_async_db
+from app.logger.logger import get_logger
 from typing import List, Any, Dict
 import json
 import logging
 
 
 router = APIRouter(prefix="/devices", tags=["devices"])
+logger = get_logger(__name__).setLevel(logging.DEBUG)
 
 
 @router.get("")
