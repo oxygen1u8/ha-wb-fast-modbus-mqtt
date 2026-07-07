@@ -1,6 +1,6 @@
 import aiofiles
 import logging
-from typing import List
+from typing import List, Literal
 from fastapi import APIRouter, Request, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, insert, delete, bindparam
@@ -10,7 +10,7 @@ from app.schemas.bus import Bus as BusSchema, BusCreate
 from app.schemas.device import Device as DeviceSchema, DeviceCreate, DeviceListDelete
 from app.models.bus import Bus as BusModel
 from app.models.device import Device as DeviceModel
-from app.fastmodbus.manager import WirenboardModbusManager, WirenboardModbusSlave
+from app.fastmodbus.manager import WirenboardModbusManager
 
 
 router = APIRouter(prefix="/serial", tags=["serial"])
@@ -38,9 +38,9 @@ async def create_bus_list(db: AsyncSession = Depends(get_async_db)):
     import os
 
     ports = []
-    path_to_options = os.environ.get("PATH_TO_OPTIONS")
+    path_to_options = str(os.environ.get("PATH_TO_OPTIONS"))
     try:
-        async with aiofiles.open(path_to_options, "r", encoding="utf-8") as file:
+        async with aiofiles.open(path_to_options, mode="r", encoding="utf-8") as file:
             content = await file.read()
             data = json.loads(content)
     except Exception as e:
@@ -216,13 +216,16 @@ async def scan_bus_by_id(bus_id: int, db: AsyncSession = Depends(get_async_db)):
             detail=f"Failed to scan bus with bus_id={bus_id}",
         )
 
+    from typing import cast
+
     device_list = [
         DeviceCreate(
-            model=slave.device_name,
             baudrate=slave.baudrate,
-            parity=slave.parity,
+            parity=cast(Literal["N", "E", "O"], slave.parity),
             slave_address=slave.slave_id,
             serial_num=slave.serial_num,
+            itf_name="serial",
+            config="",
             bus_id=bus_id,
         ).model_dump()
         for slave in slave_list

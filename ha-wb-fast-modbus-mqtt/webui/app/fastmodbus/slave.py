@@ -5,6 +5,8 @@
 устройстве протокола Fast Modbus.
 """
 
+from typing import Literal
+
 
 class FastModbusSlave:
     """
@@ -14,7 +16,13 @@ class FastModbusSlave:
     параметрах соединения и предоставляет методы для его представления.
     """
 
-    def __init__(self, slave_id: int, serial_num: int, baudrate: int, parity: str):
+    def __init__(
+        self,
+        slave_id: int,
+        serial_num: int,
+        baudrate: int,
+        parity: str,
+    ):
         """
         Инициализирует объект FastModbusSlave.
 
