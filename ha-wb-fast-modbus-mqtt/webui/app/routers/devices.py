@@ -6,7 +6,7 @@ from app.models.template import Template as TemplateModel
 from app.models.device import Device as DeviceModel
 from app.schemas.device import Device as DeviceSchema
 from app.db_depends import get_async_db
-from app.logger.logger import get_logger
+from app.logger import get_logger
 from typing import List, Any, Dict
 import json
 import logging
