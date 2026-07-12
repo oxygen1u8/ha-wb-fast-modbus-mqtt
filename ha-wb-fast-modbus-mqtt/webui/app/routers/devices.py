@@ -10,6 +10,7 @@ from app.schemas.conf import (
     DeviceSetConfigurationRequest,
     ModbusConfiguration,
     ModbusConfigurationCreate,
+    PortConfiguration,
 )
 from app.db_depends import get_async_db
 from app.logger import get_logger
@@ -44,7 +45,33 @@ async def get_templates_type(db: AsyncSession = Depends(get_async_db)):
     return titles.all()
 
 
-@router.get("/config/{port_path}/{device_id}", response_model=DeviceConfiguration)
+@router.get("/config", response_model=ModbusConfiguration)
+async def get_modbus_config(db: AsyncSession = Depends(get_async_db)):
+    stmt = select(ModbusConfigurationModel)
+    return await db.scalar(stmt)
+
+
+@router.get("/config/bus/{port_path}", response_model=PortConfiguration)
+async def get_bus_config(port_path: str, db: AsyncSession = Depends(get_async_db)):
+    stmt = select(ModbusConfigurationModel)
+    modbus_configuration = await db.scalar(stmt)
+    if modbus_configuration is None:
+        raise HTTPException(
+            status_code=404, detail="Modbus configuration doesnt exists"
+        )
+    json_modbus_configuration = json.loads(modbus_configuration.config)
+    schema_modbus_configuration = ModbusConfigurationCreate(**json_modbus_configuration)
+    port = None
+    for _ in schema_modbus_configuration.ports:
+        if _.path == port_path:
+            port = _
+            break
+    if port is None:
+        raise HTTPException(status_code=404, detail=f"Port {port_path} undefined")
+    return port
+
+
+@router.get("/config/bus/{port_path}/{device_id}", response_model=DeviceConfiguration)
 async def get_device_config(
     port_path: str, device_id: int, db: AsyncSession = Depends(get_async_db)
 ):
@@ -79,7 +106,7 @@ async def get_device_config(
     return device
 
 
-@router.post("/config")
+@router.post("/config/bus/device")
 async def set_device_config(
     setup_config: DeviceSetConfigurationRequest,
     db: AsyncSession = Depends(get_async_db),

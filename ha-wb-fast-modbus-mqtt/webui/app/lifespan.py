@@ -1,12 +1,15 @@
+import asyncio
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy import select
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from pathlib import Path
+from typing import List
 from app.database import async_session_maker
 from app.models.template import Template
 from app.models.conf import ModbusConfigurationModel
 from app.schemas.conf import ModbusConfigurationCreate, PortConfiguration
+from app.handle.handle import ModbusHandle, handle_list
 import json
 import os
 import aiofiles
@@ -65,6 +68,7 @@ async def load_main_config():
 
 
 async def load_serial_ports():
+    global handle_list
     ports = []
     path_to_options = str(os.environ.get("PATH_TO_OPTIONS"))
     try:
@@ -96,6 +100,18 @@ async def load_serial_ports():
             )
         modbus_model.config = json.dumps(json_modbus_model)
         await session.commit()
+        json_modbus_configuration = json.loads(modbus_model.config)
+        modbus_config = ModbusConfigurationCreate(**json_modbus_configuration)
+        handle_list = [ModbusHandle(port) for port in modbus_config.ports]
+
+
+async def load_tasks():
+    global handle_list
+    tasks = [asyncio.create_task(_.task_loop()) for _ in handle_list]
+    try:
+        await asyncio.gather(*tasks)
+    except:
+        raise
 
 
 @asynccontextmanager
@@ -103,4 +119,5 @@ async def lifespan(app: FastAPI):
     await load_templates()
     await load_main_config()
     await load_serial_ports()
+    await load_tasks()
     yield

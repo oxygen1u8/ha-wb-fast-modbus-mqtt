@@ -2,8 +2,6 @@ from fastapi.datastructures import Default
 from pydantic import BaseModel, Field
 from typing import Literal, List, Optional
 
-from sqlalchemy import desc
-
 
 class DeviceChannelConfiguration(BaseModel):
     name: str = Field()
@@ -26,7 +24,7 @@ class DeviceConfiguration(BaseModel):
     id: str = Field()
     slave_id: Optional[int] = Field(default=0xFF)
     enabled: Optional[bool] = Field(default=True)
-    channels: Optional[List[DeviceChannelConfiguration]] = Field(default=None)
+    channels: Optional[List[DeviceChannelConfiguration]] = Field(default=[])
 
 
 class DeviceConfigurationRequest(BaseModel):
