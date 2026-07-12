@@ -1,5 +1,5 @@
 from .bus import Bus
-from .device import Device
 from .template import Template
+from .conf import ModbusConfigurationModel
 
-__all__ = ["Bus", "Device", "Template"]
+__all__ = ["Bus", "ModbusConfigurationModel", "Template"]

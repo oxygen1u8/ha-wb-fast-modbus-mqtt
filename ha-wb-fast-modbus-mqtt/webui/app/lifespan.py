@@ -5,8 +5,11 @@ from fastapi import FastAPI
 from pathlib import Path
 from app.database import async_session_maker
 from app.models.template import Template
+from app.models.conf import ModbusConfigurationModel
+from app.schemas.conf import ModbusConfigurationCreate, PortConfiguration
 import json
 import os
+import aiofiles
 
 
 async def load_templates():
@@ -48,7 +51,56 @@ async def load_templates():
                     await session.commit()
 
 
+async def load_main_config():
+    async with async_session_maker() as session:
+        stmt = select(ModbusConfigurationModel)
+        modbus_config = await session.scalar(stmt)
+        if modbus_config is None:
+            session.add(
+                ModbusConfigurationModel(
+                    config=ModbusConfigurationCreate().model_dump_json()
+                )
+            )
+            await session.commit()
+
+
+async def load_serial_ports():
+    ports = []
+    path_to_options = str(os.environ.get("PATH_TO_OPTIONS"))
+    try:
+        async with aiofiles.open(path_to_options, mode="r", encoding="utf-8") as file:
+            content = await file.read()
+            data = json.loads(content)
+    except Exception as e:
+        print(f"Error while reading file from PATH_TO_OPTIONS={path_to_options}: {e}")
+        raise FileExistsError("TODO")
+
+    for config in data["Serial port config"]:
+        ports.append(config["Port"])
+
+    async with async_session_maker() as session:
+        stmt = select(ModbusConfigurationModel)
+        modbus_model = await session.scalar(stmt)
+
+        if modbus_model is None:
+            raise RuntimeError("TODO")
+
+        json_modbus_model = json.loads(modbus_model.config)
+        json_port_list = json_modbus_model["ports"]
+        json_port_list_paths = [json_port["path"] for json_port in json_port_list]
+        new_ports = list(set(ports) ^ set(json_port_list_paths))
+
+        for new_port in new_ports:
+            json_port_list.append(
+                PortConfiguration(path=new_port, baud_rate=9600).model_dump()
+            )
+        modbus_model.config = json.dumps(json_modbus_model)
+        await session.commit()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await load_templates()
+    await load_main_config()
+    await load_serial_ports()
     yield

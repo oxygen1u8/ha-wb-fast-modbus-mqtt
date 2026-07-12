@@ -8,13 +8,6 @@ from app.templates import templates, template_context
 from app.routers import serial, devices, logs
 
 
-app = FastAPI(
-    title="Wirenboard Modbus manager",
-    version="0.1.0",
-    lifespan=lifespan,
-)
-
-
 class IngressPathMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         ingress_path = (
@@ -25,6 +18,13 @@ class IngressPathMiddleware(BaseHTTPMiddleware):
         if ingress_path:
             request.scope["root_path"] = ingress_path
         return await call_next(request)
+
+
+app = FastAPI(
+    title="Wirenboard Modbus manager",
+    version="0.1.0",
+    lifespan=lifespan,
+)
 
 
 app.add_middleware(IngressPathMiddleware)
